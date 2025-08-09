@@ -29,7 +29,7 @@ const seedAdmins = async () => {
   await Admin.deleteMany({});
   await Admin.insertMany(admins);
 
-  console.log('✅ Admins seeded successfully');
+  console.log('Admins seeded successfully');
   process.exit();
 };
 

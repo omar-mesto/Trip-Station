@@ -6,7 +6,9 @@ import morgan from 'morgan';
 import connectDB from './config/db';
 import userRoutes from './routes/user.routes';
 import adminRoutes from './routes/admin.routes';
+import countryRoutes from './routes/country.routes';
 import companyRoutes from './routes/company.routes';
+import tripRoutes from './routes/trip.routes';
 import { errorHandler } from './middlewares/error.middleware';
 import { notFoundHandler } from './middlewares/notFound.middleware';
 
@@ -21,6 +23,8 @@ app.use(morgan('dev'));
 app.use('/api/admin', adminRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/companies', companyRoutes);
+app.use('/api/trip', tripRoutes);
+app.use('/api/countries', countryRoutes);
 
 app.use(notFoundHandler);
 
