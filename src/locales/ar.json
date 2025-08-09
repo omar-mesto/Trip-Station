@@ -23,5 +23,13 @@
   "user_blocked": "تم حظر المستخدم بنجاح",
   "user_unblocked": "تم إلغاء حظر المستخدم بنجاح",
   "failed_fetch_users": "فشل في جلب المستخدمين",
-  "failed_update_user_status": "فشل في تحديث حالة المستخدم"
+  "failed_update_user_status": "فشل في تحديث حالة المستخدم",
+  "failed_fetch_countries": "فشل في جلب المناطق",
+  "country_created": "تم إنشاء المنطقة بنجاح",
+  "failed_create_country": "فشل في إنشاء المنطقة",
+  "country_not_found": "المنطقة غير موجودة",
+  "country_updated": "تم تحديث المنطقة بنجاح",
+  "failed_update_country": "فشل في تحديث المنطقة",
+  "country_deleted": "تم حذف المنطقة بنجاح",
+  "failed_delete_country": "فشل في حذف المنطقة"
 }

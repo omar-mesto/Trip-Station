@@ -5,6 +5,6 @@ import { protectAdmin } from '../middlewares/auth';
 const router = express.Router();
 
 router.get('/', protectAdmin, getUsers);
-router.patch('/block/:id', protectAdmin, toggleBlockUser);
+router.put('/block/:id', protectAdmin, toggleBlockUser);
 
 export default router;

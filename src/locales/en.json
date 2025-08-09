@@ -23,5 +23,13 @@
   "user_blocked": "User blocked successfully",
   "user_unblocked": "User unblocked successfully",
   "failed_fetch_users": "Failed to fetch users",
-  "failed_update_user_status": "Failed to update user status"
+  "failed_update_user_status": "Failed to update user status",
+  "failed_fetch_countries": "Failed to fetch countries",
+  "country_created": "Country created successfully",
+  "failed_create_country": "Failed to create country",
+  "country_not_found": "Country not found",
+  "country_updated": "Country updated successfully",
+  "failed_update_country": "Failed to update country",
+  "country_deleted": "Country deleted successfully",
+  "failed_delete_country": "Failed to delete country"
 }
