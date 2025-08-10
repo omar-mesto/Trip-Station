@@ -149,3 +149,84 @@ export const deleteTrip = async (req: Request, res: Response) => {
     return errorResponse(res, t("failed_delete_trip", lang as any), 500);
   }
 };
+
+export const updateTripAdvertisement = async (req: Request, res: Response) => {
+  const lang = (req.query.lang as string) || "en";
+  try {
+    const tripId = req.params.id;
+    const { isAdvertisment } = req.body;
+
+    if (typeof isAdvertisment !== "boolean") {
+      return errorResponse(res, t("invalid_advertisement_value", lang as any), 400);
+    }
+
+    const updatedTrip = await Trip.findByIdAndUpdate(
+      tripId,
+      { isAdvertisment },
+      { new: true }
+    );
+
+    if (!updatedTrip) {
+      return errorResponse(res, t("trip_not_found", lang as any), 404);
+    }
+
+    return successResponse(
+      res,
+      updatedTrip,
+      t(
+        isAdvertisment ? "trip_marked_advertisement" : "trip_unmarked_advertisement",
+        lang as any
+      )
+    );
+  } catch (error) {
+    return errorResponse(res, t("failed_update_advertisement", lang as any), 500);
+  }
+};
+
+export const getAdvertisementTrips = async (req: Request, res: Response) => {
+  const lang = (req.query.lang as string) || "en";
+  try {
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 10;
+    const skip = (page - 1) * limit;
+
+    const trips = await Trip.find({ isAdvertisment: true })
+      .populate("company", `name.${lang} rating logo`)
+      .populate("country", `name.${lang}`)
+      .skip(skip)
+      .limit(limit)
+      .sort({ createdAt: -1 });
+
+    const totalTrips = await Trip.countDocuments({ isAdvertisment: true });
+
+    const formattedTrips = trips.map((trip: any) => ({
+      id: trip._id,
+      name: trip.name[lang] || trip.name.en,
+      description: trip.description?.[lang] || trip.description?.en || "",
+      location: trip.location,
+      lat: trip.lat,
+      lang: trip.lang,
+      price: trip.price,
+      status: trip.status,
+      images: trip.images,
+      company: {
+        id: trip.company?._id,
+        name: trip.company?.name?.[lang] || trip.company?.name?.en || "",
+      },
+      country: {
+        id: trip.country?._id,
+        name: trip.country?.name?.[lang] || trip.country?.name?.en || "",
+      },
+      createdAt: trip.createdAt,
+    }));
+
+    return successResponse(res, {
+      trips: formattedTrips,
+      totalPages: Math.ceil(totalTrips / limit),
+      currentPage: page,
+      totalTrips,
+    });
+  } catch (error) {
+    return errorResponse(res, t("failed_fetch_advertisements", lang as any), 500);
+  }
+};

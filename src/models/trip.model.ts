@@ -19,6 +19,7 @@ export interface ITrip extends Document {
   company: mongoose.Types.ObjectId;
   createdAt: Date;
   updatedAt: Date;
+  isAdvertisment: Boolean;
 }
 
 const tripSchema = new Schema<ITrip>({
@@ -31,6 +32,7 @@ const tripSchema = new Schema<ITrip>({
     ar: { type: String }
   },
   location: { type: String },
+  isAdvertisment: {type: Boolean},
   lat: { type: Number },
   lang: { type: Number },
   price: { type: Number, required: true },
