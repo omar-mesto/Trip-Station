@@ -1,26 +1,34 @@
-import jwt from 'jsonwebtoken';
 import { Request, Response, NextFunction } from 'express';
+import jwt from 'jsonwebtoken';
+import User from '../models/user.model';
 import Admin from '../models/admin.model';
-import { errorResponse } from '../utils/response';
+import { t } from '../config/i18n';
 
-export const protectAdmin = async (req: Request, res: Response, next: NextFunction) => {
-  let token;
-
-  if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
-    try {
-      token = req.headers.authorization.split(' ')[1];
-
-      const decoded: any = jwt.verify(token, process.env.JWT_SECRET!);
-
-      const admin = await Admin.findById(decoded.id).select('-password');
-      if (!admin) return errorResponse(res, 'Not authorized', 401);
-
-      req.user = admin;
-      next();
-    } catch (err) {
-      return errorResponse(res, 'Token failed or expired', 401);
+export const protect = async (req: Request & { user?: any }, res: Response, next: NextFunction) => {
+  const lang = (req.query.lang as string) === 'ar' ? 'ar' : 'en';
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({ success: false, message: t('unauthorized', lang) });
     }
-  } else {
-    return errorResponse(res, 'No token provided', 401);
+
+    const token = authHeader.split(' ')[1];
+    const decoded = jwt.verify(token, process.env.JWT_ACCESS_SECRET || 'accesssecret') as any;
+
+    const user = await User.findById(decoded.id).select('-password');
+    if (user) {
+      req.user = user;
+      return next();
+    }
+
+    const admin = await Admin.findById(decoded.id).select('-password');
+    if (admin) {
+      req.user = admin;
+      return next();
+    }
+
+    return res.status(401).json({ success: false, message: t('unauthorized', lang) });
+  } catch {
+    return res.status(401).json({ success: false, message: t('unauthorized', lang) });
   }
 };

@@ -1,75 +1,35 @@
 import { Request, Response } from 'express';
-import Country from '../models/country.model';
+import { asyncHandler } from '../middlewares/asyncHandler';
 import { successResponse, errorResponse } from '../utils/response';
-import { t } from "../config/i18n";
+import { t } from '../config/i18n';
+import { createCountryService,updateCountryService,deleteCountryService,listCountriesService } from '../services/country.service';
 
-export const getCountries = async (req: Request, res: Response) => {
-  const lang = (req.query.lang as string) || "en";
-  try {
-    const countries = await Country.find().sort({ createdAt: -1 });
-
-    const formatted = countries.map((c: any) => ({
-      id: c._id,
-      name: c.name[lang] || c.name.en,
-      image: c.image
-    }));
-
-    return successResponse(res, formatted);
-  } catch (error) {
-    return errorResponse(res, t("failed_fetch_countries", lang as any), 500);
-  }
+const getLang = (req: Request): 'en' | 'ar' => {
+  const langRaw = req.query.lang as string | undefined;
+  return langRaw === 'ar' ? 'ar' : 'en';
 };
 
-export const createCountry = async (req: Request, res: Response) => {
-  const lang = (req.query.lang as string) || "en";
-  try {
-    const { name_en, name_ar, image } = req.body;
+export const createCountry = asyncHandler(async (req: Request, res: Response) => {
+  const lang = getLang(req);
+  const country = await createCountryService(req.body);
+  return successResponse(res, country);
+});
 
-    const newCountry = new Country({
-      name: { en: name_en, ar: name_ar },
-      image,
-    });
+export const updateCountry = asyncHandler(async (req: Request, res: Response) => {
+  const lang = getLang(req);
+  const updated = await updateCountryService(req.params.id, req.body);
+  if (!updated) return errorResponse(res, t('country_not_found', lang), 404);
+  return successResponse(res, t('country_updated_success', lang), updated);
+});
 
-    await newCountry.save();
-    return successResponse(res, newCountry, t("country_created", lang as any), 201);
-  } catch (error) {
-    return errorResponse(res, t("failed_create_country", lang as any), 500);
-  }
-};
+export const deleteCountry = asyncHandler(async (req: Request, res: Response) => {
+  const lang = getLang(req);
+  const deleted = await deleteCountryService(req.params.id);
+  if (!deleted) return errorResponse(res, t('country_not_found', lang), 404);
+  return successResponse(res, t('country_deleted_success', lang));
+});
 
-export const updateCountry = async (req: Request, res: Response) => {
-  const lang = (req.query.lang as string) || "en";
-  try {
-    const countryId = req.params.id;
-    const { name_en, name_ar, image } = req.body;
-
-    const updateData: any = {};
-    if (name_en || name_ar) {
-      updateData["name.en"] = name_en;
-      updateData["name.ar"] = name_ar;
-    }
-    if (image) updateData.image = image;
-
-    const updatedCountry = await Country.findByIdAndUpdate(countryId, updateData, { new: true });
-
-    if (!updatedCountry) return errorResponse(res, t("country_not_found", lang as any), 404);
-
-    return successResponse(res, updatedCountry, t("country_updated", lang as any));
-  } catch (error) {
-    return errorResponse(res, t("failed_update_country", lang as any), 500);
-  }
-};
-
-export const deleteCountry = async (req: Request, res: Response) => {
-  const lang = (req.query.lang as string) || "en";
-  try {
-    const countryId = req.params.id;
-
-    const deleted = await Country.findByIdAndDelete(countryId);
-    if (!deleted) return errorResponse(res, t("country_not_found", lang as any), 404);
-
-    return successResponse(res, null, t("country_deleted", lang as any));
-  } catch (error) {
-    return errorResponse(res, t("failed_delete_country", lang as any), 500);
-  }
-};
+export const getCountries = asyncHandler(async (req: Request, res: Response) => {
+  const countries = await listCountriesService();
+  return successResponse(res, countries);
+});
