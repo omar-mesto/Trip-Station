@@ -1,59 +1,55 @@
 import { Request, Response } from 'express';
-import User from '../models/user.model';
+import { asyncHandler } from '../middlewares/asyncHandler';
 import { successResponse, errorResponse } from '../utils/response';
-import { t } from "../config/i18n";
+import { t } from '../config/i18n';
+import { listUsersService,toggleBlockUserService,registerUserService,updateProfileService} from '../services/user.service';
 
-export const getUsers = async (req: Request, res: Response) => {
-  const lang = (req.query.lang as string) || "en";
-  try {
-    const page = parseInt(req.query.page as string) || 1;
-    const limit = parseInt(req.query.limit as string) || 10;
-    const skip = (page - 1) * limit;
+const getLang = (req: Request): 'en' | 'ar' => {
+  const langRaw = req.query.lang as string | undefined;
+  return langRaw === 'ar' ? 'ar' : 'en';
+};
 
-    const users = await User.find()
-      .select('name _id createdAt email image isBlocked')
-      .skip(skip)
-      .limit(limit)
-      .sort({ createdAt: -1 });
+export const getUsers = asyncHandler(async (req: Request, res: Response) => {
+  const page = parseInt(req.query.page as any) || 1;
+  const limit = parseInt(req.query.limit as any) || 10;
+  const data = await listUsersService(page, limit);
+  return successResponse(res, data);
+});
 
-    const totalUsers = await User.countDocuments();
+export const toggleBlockUser = asyncHandler(async (req: Request, res: Response) => {
+  const user = await toggleBlockUserService(req.params.id);
+  return successResponse(res, user);
+});
 
-    const formattedUsers = users.map((user: any) => ({
-      id: user._id,
-      name: user.name,
+export const registerUser = asyncHandler(async (req: Request, res: Response) => {
+  const lang = getLang(req);
+  const payload = req.body;
+  if ((req as any).file && (req as any).file.path) payload.profileImage = (req as any).file.path;
+  const user = await registerUserService(payload);
+  return successResponse(res, { _id: user._id, fullName: user.fullName, email: user.email }, t('register_success', lang));
+});
+
+export const updateProfile = asyncHandler(async (req: Request, res: Response) => {
+  const lang = getLang(req);
+  const userId = (req as any).user?._id?.toString();
+  if (!userId) return errorResponse(res, t('not_authorized', lang), 401);
+
+  const payload = req.body;
+  if ((req as any).file && (req as any).file.path) payload.profileImage = (req as any).file.path;
+
+  const user = await updateProfileService(userId, payload);
+  if (!user) {
+    return errorResponse(res, t('user_not_found', lang), 404);
+  }
+
+  return successResponse(
+    res,
+    {
+      _id: user._id,
+      fullName: user.fullName,
       email: user.email,
-      image: user.image,
-      isBlocked: user.isBlocked,
-      createdAt: user.createdAt,
-    }));
-
-    return successResponse(res, {
-      users: formattedUsers,
-      totalPages: Math.ceil(totalUsers / limit),
-      currentPage: page,
-      totalUsers,
-    });
-  } catch (error) {
-    return errorResponse(res, t("failed_fetch_users", lang as any), 500);
-  }
-};
-
-export const toggleBlockUser = async (req: Request, res: Response) => {
-  const lang = (req.query.lang as string) || "en";
-  try {
-    const userId = req.params.id;
-    const user = await User.findById(userId);
-    if (!user) return errorResponse(res, t("user_not_found", lang as any), 404);
-
-    user.isBlocked = !user.isBlocked;
-    await user.save();
-
-    const message = user.isBlocked
-      ? t("user_blocked_successfully", lang as any)
-      : t("user_unblocked_successfully", lang as any);
-
-    return successResponse(res, user, message);
-  } catch (error) {
-    return errorResponse(res, t("failed_update_user_status", lang as any), 500);
-  }
-};
+      profileImage: user.profileImage,
+    },
+    t('profile_updated_successfully', lang)
+  );
+});
