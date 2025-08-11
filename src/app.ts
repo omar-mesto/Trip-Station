@@ -9,13 +9,16 @@ import adminRoutes from './routes/admin.routes';
 import countryRoutes from './routes/country.routes';
 import companyRoutes from './routes/company.routes';
 import tripRoutes from './routes/trip.routes';
+import authRoutes from './routes/auth.routes';
 import { errorHandler } from './middlewares/error.middleware';
 import { notFoundHandler } from './middlewares/notFound.middleware';
+import { setLang } from './middlewares/setLang';
 
 dotenv.config();
 const app = express();
 
 app.use(helmet());
+app.use(setLang);
 app.use(cors());
 app.use(express.json());
 app.use(morgan('dev'));
@@ -25,6 +28,7 @@ app.use('/api/users', userRoutes);
 app.use('/api/companies', companyRoutes);
 app.use('/api/trip', tripRoutes);
 app.use('/api/countries', countryRoutes);
+app.use('/api/auth', authRoutes);
 
 app.use(notFoundHandler);
 
