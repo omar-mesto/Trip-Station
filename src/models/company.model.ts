@@ -1,15 +1,6 @@
 import mongoose, { Schema, Document } from 'mongoose';
+import { ICompany } from '../interfaces/models';
 
-export interface ICompany extends Document {
-  name: {
-    en: string;
-    ar?: string;
-  };
-  rating: number;
-  logo: string;
-  createdAt: Date;
-  updatedAt: Date;
-}
 
 const companySchema = new Schema<ICompany>({
    name: {

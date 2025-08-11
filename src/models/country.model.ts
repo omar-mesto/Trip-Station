@@ -1,14 +1,5 @@
 import mongoose, { Schema, Document } from 'mongoose';
-
-export interface ICountry extends Document {
-  name: {
-    en: string;
-    ar?: string;
-  };
-  flag?: string;
-  createdAt: Date;
-  updatedAt: Date;
-}
+import { ICountry } from '../interfaces/models';
 
 const countrySchema = new Schema<ICountry>({
   name: {

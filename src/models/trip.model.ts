@@ -1,26 +1,5 @@
-import mongoose, { Schema, Document } from 'mongoose';
-
-export interface ITrip extends Document {
-  name: {
-    en: string;
-    ar?: string;
-  };
-  description?: {
-    en?: string;
-    ar?: string;
-  };
-  location: string;
-  lat: number;
-  lang: number;
-  price: number;
-  status: string;
-  images: string[];
-  country: mongoose.Types.ObjectId;
-  company: mongoose.Types.ObjectId;
-  createdAt: Date;
-  updatedAt: Date;
-  isAdvertisment: Boolean;
-}
+import mongoose, { Schema } from 'mongoose';
+import { ITrip } from '../interfaces/models';
 
 const tripSchema = new Schema<ITrip>({
   name: {
@@ -32,7 +11,7 @@ const tripSchema = new Schema<ITrip>({
     ar: { type: String }
   },
   location: { type: String },
-  isAdvertisment: {type: Boolean},
+  isAdvertisement: { type: Boolean },
   lat: { type: Number },
   lang: { type: Number },
   price: { type: Number, required: true },
