@@ -1,18 +1,13 @@
 import express from 'express';
-import {
-  getCompanies,
-  createCompany,
-  updateCompany,
-  deleteCompany,
-} from '../controllers/company.controller';
+import { getCompanies,createCompany,updateCompany,deleteCompany } from '../controllers/company.controller';
 
-import { protectAdmin } from '../middlewares/auth';
+import { protect } from '../middlewares/auth';
 
 const router = express.Router();
 
-router.get('/', protectAdmin, getCompanies);
-router.post('/', protectAdmin, createCompany);
-router.put('/:id', protectAdmin, updateCompany);
-router.delete('/:id', protectAdmin, deleteCompany);
+router.get('/', protect, getCompanies);
+router.post('/', protect, createCompany);
+router.put('/:id', protect, updateCompany);
+router.delete('/:id', protect, deleteCompany);
 
 export default router;

@@ -1,10 +1,5 @@
 import express from 'express';
-import {
-  getCountries,
-  createCountry,
-  updateCountry,
-  deleteCountry
-} from '../controllers/country.controller';
+import { getCountries,createCountry,updateCountry,deleteCountry } from '../controllers/country.controller';
 
 const router = express.Router();
 
