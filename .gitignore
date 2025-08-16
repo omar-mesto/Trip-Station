@@ -5,6 +5,7 @@
 /dist
 /build
 /out
+/uploads
 
 # runtime files
 /npm-debug.log*
