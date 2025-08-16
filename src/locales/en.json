@@ -20,7 +20,7 @@
   "trip_not_found": "Trip not found",
   "failed_fetch_trips": "Failed to fetch trips",
   "user_not_found": "User not found",
-  "user_blocked": "User blocked successfully",
+  "user_blocked": "User blocked",
   "user_unblocked": "User unblocked successfully",
   "failed_fetch_users": "Failed to fetch users",
   "failed_update_user_status": "Failed to update user status",
@@ -53,5 +53,13 @@
   "trip_marked_advertisement": "Trip marked as advertisement.",
   "trip_unmarked_advertisement": "Trip removed from advertisements.",
   "failed_update_advertisement": "Failed to update advertisement status.",
-  "failed_fetch_advertisements": "Failed to fetch advertisement trips."
+  "failed_fetch_advertisements": "Failed to fetch advertisement trips.",
+  "company_deleted_success":"company deleted successfully",
+  "lat_lng_required": "Latitude and longitude are required",
+  "Logged out successfully":"Logged out successfully",
+  "unauthorized": "Unauthorized",
+  "start_must_before_end":"start must before end",
+  "Added to favorites":"Added to favorites",
+  "Favorite not found":"Favorite not found",
+  "Removed from favorites":"Removed from favorites"
 }

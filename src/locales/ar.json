@@ -20,7 +20,7 @@
   "trip_not_found": "الرحلة غير موجودة",
   "failed_fetch_trips": "فشل في جلب الرحلات",
   "user_not_found": "المستخدم غير موجود",
-  "user_blocked": "تم حظر المستخدم بنجاح",
+  "user_blocked": "تم حظر المستخدم ",
   "user_unblocked": "تم إلغاء حظر المستخدم بنجاح",
   "failed_fetch_users": "فشل في جلب المستخدمين",
   "failed_update_user_status": "فشل في تحديث حالة المستخدم",
@@ -53,5 +53,13 @@
   "trip_marked_advertisement": "رحلة تم وضع علامة عليها كإعلان.",
   "trip_unmarked_advertisement": "تمت إزالة الرحلة من الإعلانات",
   "failed_update_advertisement": "فشل في تحديث حالة الإعلان.",
-  "failed_fetch_advertisements": "فشل جلب الإعلانات."
+  "failed_fetch_advertisements": "فشل جلب الإعلانات.",
+  "company_deleted_success":"تم حذف الشركة بنجاح",
+  "lat_lng_required": "خط العرض وخط الطول مطلوبان",
+  "Logged out successfully":"تم تسجيل الخروج بنجاح",
+  "unauthorized": "غير مصرح لك بالدخول",
+  "start_must_before_end":"يجب ان يكون وقت النهاية قبل وقت البداية",
+  "Added to favorites":"تمت الإضافة الى المفضلة",
+  "Favorite not found":"لم يتم العثور على الرحلة المفضلة",
+  "Removed from favorites":"تم الازالة من المفضلة"
 }
