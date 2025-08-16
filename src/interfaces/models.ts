@@ -1,6 +1,8 @@
 import mongoose, { Document } from 'mongoose';
+import { Types } from 'mongoose';
 
 export interface IUser extends Document {
+  _id: Types.ObjectId;
   fullName: string;
   email: string;
   password: string;
@@ -9,31 +11,46 @@ export interface IUser extends Document {
   comparePassword(candidatePassword: string): Promise<boolean>;
 }
 
+export interface AuthRequest extends Request {
+  user?: any;
+}
+
 export interface ITrip extends Document {
-  name: {
-    en: string;
-    ar?: string;
+  name: { en: string; ar?: string };
+  description: { en: string; ar?: string };
+  location?: string;
+  geoLocation: {
+    type: 'Point';
+    coordinates: [number, number];
   };
-  description?: {
-    en?: string;
-    ar?: string;
-  };
-  location: string;
-  lat: number;
-  lang: number;
+  tripType: 'local' | 'international';
+  isAdvertisement: boolean;
   price: number;
+  rating: number;
   status: string;
   images: string[];
-  country: mongoose.Types.ObjectId;
   company: mongoose.Types.ObjectId;
+  country?: mongoose.Types.ObjectId;
   createdAt: Date;
   updatedAt: Date;
-  isAdvertisement: Boolean;
+  startDate: Date;
+  endDate: Date;
+}
+
+export interface INearbyTrip {
+  id: string;
+  price: number;
+  location?: string;
+  lat: number | null;
+  lng: number | null;
+  name: string | null;
+  description: string | null;
 }
 
 export interface LoginPayload {
   email: string;
   password: string;
+  role: 'admin' | 'user';
 }
 
 export interface RegisterPayload {
@@ -43,15 +60,26 @@ export interface RegisterPayload {
   profileImage?: string;
 }
 
-export interface UpdateProfileInput {
-  userId: string;
-  fullName?: string;
-  email?: string;
+export interface IAccountBase {
+ _id: Types.ObjectId;
+  fullName: string;
+  email: string;
+  password: string;
+  comparePassword(candidatePassword: string): Promise<boolean>;
+}
+
+export interface IUserAccount extends IAccountBase {
   profileImage?: string;
+  isBlocked?: boolean;
+}
+
+export interface IAdminAccount extends IAccountBase {
+  role: string;
 }
 
 export interface IAdmin extends Document {
-  name: string;
+  _id: Types.ObjectId;
+  fullName: string;
   email: string;
   password: string;
   role: string;
@@ -63,6 +91,14 @@ export interface ICompany extends Document {
     en: string;
     ar?: string;
   };
+  contact:{
+    whatsapp: string;
+    facebook: string,
+    website: string ,
+    instagram: string,
+    email: string,
+    phone: string
+  }
   rating: number;
   logo: string;
   createdAt: Date;
