@@ -1,16 +1,14 @@
 import express from 'express';
-import { userLogin, adminLogin, userRegister, logout } from '../controllers/auth.controller';
+import { login, userRegister, logout, userUpdateProfile } from '../controllers/auth.controller';
 import { protect } from '../middlewares/auth';
 import { validate } from '../middlewares/validate';
 import { loginSchema, registerSchema } from '../validations/auth.validation';
-import { updateProfile } from '../controllers/user.controller';
+import { uploadProfileImage } from '../middlewares/uploadImage';
 
 const router = express.Router();
-
-router.post('/user/register', validate(registerSchema), userRegister);
-router.post('/user/login', validate(loginSchema), userLogin);
-router.post('/admin/login', validate(loginSchema), adminLogin);
+router.post('/login', validate(loginSchema), login);
+router.post('/user/register',uploadProfileImage.single('profileImage'), validate(registerSchema), userRegister);
 router.post('/logout', protect, logout);
-router.put('/user/update-profile', protect, updateProfile);
+router.put('/user/update-profile', protect, uploadProfileImage.single('profileImage'), userUpdateProfile);
 
 export default router;
