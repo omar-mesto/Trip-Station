@@ -1,53 +1,63 @@
 import { Request, Response } from 'express';
-import { adminLoginService, userLoginService, userRegisterService, updateUserProfileService, logoutService } from '../services/auth.service';
+import { userRegisterService, updateUserProfileService, logoutService } from '../services/auth.service';
 import { successResponse, errorResponse } from '../utils/response';
 import { t } from '../config/i18n';
 import { asyncHandler } from '../middlewares/asyncHandler';
+import { getLang } from '../utils/lang.util';
+import { generateAccessToken } from '../utils/token';
+import { Document } from 'mongoose';
+import Admin from '../models/admin.model';
+import User from '../models/user.model';
+import { IUserAccount, IAdminAccount } from '../interfaces/models';
 
-const getLangFromRequest = (req: Request) => {
-  return (req.query.lang as string) === 'ar' ? 'ar' : 'en';
-};
+export const login = async (req: Request, res: Response) => {
+  const lang = getLang(req);
+  const { email, password, role } = req.body;
 
-export const adminLogin = async (req: Request, res: Response) => {
-  const lang = getLangFromRequest(req);
   try {
-    const { accessToken, admin } = await adminLoginService(req.body, lang);
+    let account: (IUserAccount & Document) | (IAdminAccount & Document) | null = null;
+
+    if (role === 'admin') {
+      account = await Admin.findOne({ email });
+    } else {
+      account = await User.findOne({ email });
+    }
+
+    if (!account) {
+      return errorResponse(res, t('invalid_credentials', lang), 401);
+    }
+
+    const isMatch = await account.comparePassword(password);
+    if (!isMatch) {
+      return errorResponse(res, t('invalid_credentials', lang), 401);
+    }
+
+    if (role === 'user' && 'isBlocked' in account && account.isBlocked) {
+      return errorResponse(res, t('user_blocked', lang), 403);
+    }
+
+    const accessToken = generateAccessToken(account._id.toString());
+
     return successResponse(res, {
-      admin: {
-        _id: admin._id,
-        name: admin.name,
-        email: admin.email,
-        role: admin.role,
+      [role]: {
+        _id: account._id,
+        fullName: account.fullName,
+        email: account.email,
+        ...(role === 'admin'
+          ? { role: (account as IAdminAccount).role }
+          : { profileImage: (account as IUserAccount).profileImage }),
       },
       accessToken,
     });
   } catch (error: any) {
-    return errorResponse(res, error.message || t('invalid_credentials', lang), 401);
-  }
-};
-
-export const userLogin = async (req: Request, res: Response) => {
-  const lang = getLangFromRequest(req);
-  try {
-    const { accessToken, user } = await userLoginService(req.body, lang);
-    return successResponse(res, {
-      user: {
-        _id: user._id,
-        fullName: user.fullName,
-        email: user.email,
-        profileImage: user.profileImage,
-      },
-      accessToken,
-    });
-  } catch (error: any) {
-    return errorResponse(res, error.message || t('invalid_credentials', lang), 401);
+    return errorResponse(res, error.message || t('login_failed', lang), 500);
   }
 };
 
 export const userRegister = async (req: Request, res: Response) => {
-  const lang = getLangFromRequest(req);
+  const lang = getLang(req);
   try {
-    const { accessToken, user } = await userRegisterService(req.body, lang);
+    const { accessToken, user } = await userRegisterService(req.body, lang, req.file);
     return successResponse(res, {
       user: {
         _id: user._id,
@@ -62,11 +72,12 @@ export const userRegister = async (req: Request, res: Response) => {
   }
 };
 
+
 export const userUpdateProfile = async (req: Request & { user?: any }, res: Response) => {
-  const lang = getLangFromRequest(req);
+  const lang = getLang(req);
   if (!req.user) return errorResponse(res, t('unauthorized', lang), 401);
   try {
-    const updatedUser = await updateUserProfileService(req.user._id, req.body, lang);
+    const updatedUser = await updateUserProfileService(req.user._id, req.body, lang, req.file);
     return successResponse(res, {
       user: {
         _id: updatedUser._id,
@@ -81,6 +92,7 @@ export const userUpdateProfile = async (req: Request & { user?: any }, res: Resp
 };
 
 export const logout = asyncHandler(async (req: Request, res: Response) => {
+  const lang = getLang(req);
   await logoutService();
   res.clearCookie('accessToken', {
     httpOnly: true,
@@ -88,5 +100,5 @@ export const logout = asyncHandler(async (req: Request, res: Response) => {
     sameSite: 'strict',
   });
 
-  return successResponse(res, { message: 'Logged out successfully' });
+  return successResponse(res, t('Logged out successfully', lang));
 });
