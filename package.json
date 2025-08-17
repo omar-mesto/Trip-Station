@@ -3,9 +3,9 @@
   "version": "1.0.0",
   "main": "dist/app.js",
   "scripts": {
+    "start": "node dist/app.js",
     "dev": "ts-node-dev --respawn --transpile-only src/app.ts",
-    "build": "rimraf dist && tsc",
-    "start": "node dist/app.js"
+    "build": "tsc"
   },
   "dependencies": {
     "bcryptjs": "^3.0.2",
