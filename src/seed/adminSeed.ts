@@ -11,14 +11,14 @@ const seedAdmins = async () => {
 
   const admins = [
     {
-      name: 'Admin',
+      fullName: 'Admin',
       email: 'admin1@example.com',
       password: await bcrypt.hash('password123', 10),
       role: 'admin',
       createdAt: new Date(),
     },
     {
-      name: 'Admin2',
+      fullName: 'Admin2',
       email: 'admin2@example.com',
       password: await bcrypt.hash('password123', 10),
       role: 'admin',
