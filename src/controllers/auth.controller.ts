@@ -5,22 +5,20 @@ import { t } from '../config/i18n';
 import { asyncHandler } from '../middlewares/asyncHandler';
 import { getLang } from '../utils/lang.util';
 import { generateAccessToken } from '../utils/token';
-import { Document } from 'mongoose';
 import Admin from '../models/admin.model';
 import User from '../models/user.model';
-import { IUserAccount, IAdminAccount } from '../interfaces/models';
 
 export const login = async (req: Request, res: Response) => {
   const lang = getLang(req);
   const { email, password, role } = req.body;
 
   try {
-    let account: (IUserAccount & Document) | (IAdminAccount & Document) | null = null;
+    let account: any = null;
 
     if (role === 'admin') {
-      account = await Admin.findOne({ email });
+      account = await Admin.findOne({ email: email.toLowerCase().trim() });
     } else {
-      account = await User.findOne({ email });
+      account = await User.findOne({ email: email.toLowerCase().trim() });
     }
 
     if (!account) {
@@ -32,7 +30,7 @@ export const login = async (req: Request, res: Response) => {
       return errorResponse(res, t('invalid_credentials', lang), 401);
     }
 
-    if (role === 'user' && 'isBlocked' in account && account.isBlocked) {
+    if (role === 'user' && account.isBlocked) {
       return errorResponse(res, t('user_blocked', lang), 403);
     }
 
@@ -44,8 +42,8 @@ export const login = async (req: Request, res: Response) => {
         fullName: account.fullName,
         email: account.email,
         ...(role === 'admin'
-          ? { role: (account as IAdminAccount).role }
-          : { profileImage: (account as IUserAccount).profileImage }),
+          ? { role: account.role }
+          : { profileImage: account.profileImage }),
       },
       accessToken,
     });
@@ -72,11 +70,12 @@ export const userRegister = async (req: Request, res: Response) => {
   }
 };
 
-
 export const userUpdateProfile = async (req: Request & { user?: any }, res: Response) => {
   const lang = getLang(req);
   if (!req.user) return errorResponse(res, t('unauthorized', lang), 401);
   try {
+    if (req.body.email) delete req.body.email;
+
     const updatedUser = await updateUserProfileService(req.user._id, req.body, lang, req.file);
     return successResponse(res, {
       user: {
@@ -90,6 +89,29 @@ export const userUpdateProfile = async (req: Request & { user?: any }, res: Resp
     return errorResponse(res, error.message || t('user_not_found', lang), 400);
   }
 };
+
+export const changePassword = asyncHandler(async (req: Request & { user?: any }, res: Response) => {
+  const lang = getLang(req);
+  const { oldPassword, newPassword } = req.body;
+
+  if (!req.user) return errorResponse(res, t('unauthorized', lang), 401);
+
+  const user = await User.findById(req.user._id);
+  if (!user) return errorResponse(res, t('user_not_found', lang), 404);
+
+  const isMatch = await user.comparePassword(oldPassword);
+  if (!isMatch) return errorResponse(res, t('invalid_old_password', lang), 400);
+
+  if (!newPassword || newPassword.length < 6) {
+    return errorResponse(res, t('password_min_length', lang), 400);
+  }
+
+  user.password = newPassword;
+  await user.save();
+
+  return successResponse(res, t('password_changed_success', lang));
+});
+
 
 export const logout = asyncHandler(async (req: Request, res: Response) => {
   const lang = getLang(req);

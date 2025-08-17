@@ -10,19 +10,21 @@ export const logoutService = async () => {
 };
 
 export const loginService = async (
-  payload: LoginPayload,lang: 'en' | 'ar'): Promise<{ accessToken: string; account: (IUserAccount | IAdminAccount) & { _id: any } }> => {
+  payload: LoginPayload,
+  lang: 'en' | 'ar'
+): Promise<{ accessToken: string; account: (IUserAccount | IAdminAccount) & { _id: any } }> => {
   const { email, password, role } = payload;
 
   let account: (IUserAccount & any) | (IAdminAccount & any) | null = null;
 
   if (role === 'admin') {
-    account = await Admin.findOne({ email });
+    account = await Admin.findOne({ email: email.toLowerCase().trim() });
     if (!account) throw new Error(t('invalid_credentials', lang));
 
     const isMatch = await account.comparePassword(password);
     if (!isMatch) throw new Error(t('invalid_credentials', lang));
   } else {
-    account = await User.findOne({ email });
+    account = await User.findOne({ email: email.toLowerCase().trim() });
     if (!account) throw new Error(t('invalid_credentials', lang));
     if (account.isBlocked) throw new Error(t('user_blocked', lang));
 
@@ -39,15 +41,12 @@ export const userRegisterService = async (
   lang: 'en' | 'ar',
   file?: Express.Multer.File
 ) => {
-  const existingUser = await User.findOne({ email: payload.email });
+  const existingUser = await User.findOne({ email: payload.email.toLowerCase().trim() });
   if (existingUser) throw new Error(t('email_already_exists', lang));
-
-  const hashedPassword = await bcrypt.hash(payload.password, 10);
-
   const user = await User.create({
     fullName: payload.fullName,
-    email: payload.email,
-    password: hashedPassword,
+    email: payload.email.toLowerCase().trim(),
+    password: payload.password,
     profileImage: file ? `/uploads/profileImages/${file.filename}` : undefined,
   });
 
@@ -58,35 +57,28 @@ export const userRegisterService = async (
 
 export const updateUserProfileService = async (
   userId: string,
-  payload: Partial<RegisterPayload>,
+  payload: Partial<RegisterPayload> & { oldPassword?: string; newPassword?: string },
   lang: 'en' | 'ar',
   file?: Express.Multer.File
 ) => {
-  if (payload.password) {
-    payload.password = await bcrypt.hash(payload.password, 10);
-  }
-
   if (payload.email) {
-    const existingUser = await User.findOne({ email: payload.email });
-    if (existingUser && existingUser._id.toString() !== userId) {
-      throw new Error(t('email_already_exists', lang));
-    }
+    delete payload.email;
   }
 
-  const updateData: any = { ...payload };
-  if (file) {
-    updateData.profileImage = `/uploads/profileImages/${file.filename}`;
+  const user = await User.findById(userId);
+  if (!user) throw new Error(t('user_not_found', lang));
+
+  if (payload.oldPassword && payload.newPassword) {
+    if (payload.newPassword.length < 6) {
+      throw new Error(t('password_min_length', lang));
+    }
+    user.password = payload.newPassword;
   }
 
-  try {
-    const updatedUser = await User.findByIdAndUpdate(userId, updateData, { new: true });
-    if (!updatedUser) throw new Error(t('user_not_found', lang));
-    return updatedUser;
-  } catch (error: any) {
-    if (error.code === 11000 && error.keyPattern?.email) {
-      throw new Error(t('email_already_exists', lang));
-    }
-    throw error;
-  }
+  if (payload.fullName) user.fullName = payload.fullName;
+  if (file) user.profileImage = `/uploads/profileImages/${file.filename}`;
+
+  await user.save();
+  return user;
 };
 

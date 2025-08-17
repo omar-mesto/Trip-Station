@@ -309,8 +309,8 @@ export const nearbyTripsService = async (lat: number, lng: number, lang: Lang): 
       lng: lngOut,
       name: trip.name ?? null,
       description: trip.description ?? null,
-      startDate: trip.startDate ?? null,  // أضف هذا
-      endDate: trip.endDate ?? null,      // وأضف هذا
+      startDate: trip.startDate ?? null,
+      endDate: trip.endDate ?? null,
     };
   });
 };

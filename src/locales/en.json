@@ -49,17 +49,19 @@
   "user_blocked_successfully": "User blocked successfully",
   "user_unblocked_successfully": "User unblocked successfully",
   "forbidden_access": "forbidden access",
-  "invalid_advertisement_value": "isAdvertisment must be true or false.",
+  "invalid_advertisement_value": "IsAdvertisment must be true or false.",
   "trip_marked_advertisement": "Trip marked as advertisement.",
   "trip_unmarked_advertisement": "Trip removed from advertisements.",
   "failed_update_advertisement": "Failed to update advertisement status.",
   "failed_fetch_advertisements": "Failed to fetch advertisement trips.",
-  "company_deleted_success":"company deleted successfully",
+  "company_deleted_success":"Company deleted successfully",
   "lat_lng_required": "Latitude and longitude are required",
   "Logged out successfully":"Logged out successfully",
   "unauthorized": "Unauthorized",
-  "start_must_before_end":"start must before end",
+  "start_must_before_end":"Start Date must before end Date",
   "Added to favorites":"Added to favorites",
   "Favorite not found":"Favorite not found",
-  "Removed from favorites":"Removed from favorites"
+  "Removed from favorites":"Removed from favorites",
+  "password_min_length":"Password Min Length 6",
+  "invalid_old_password":"Invalid Old Password"
 }

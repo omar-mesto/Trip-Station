@@ -61,5 +61,7 @@
   "start_must_before_end":"يجب ان يكون وقت النهاية قبل وقت البداية",
   "Added to favorites":"تمت الإضافة الى المفضلة",
   "Favorite not found":"لم يتم العثور على الرحلة المفضلة",
-  "Removed from favorites":"تم الازالة من المفضلة"
+  "Removed from favorites":"تم الازالة من المفضلة",
+  "password_min_length":"كلمة المرور يجب ان تكون اكبر من 6 محارف",
+  "invalid_old_password":"كلمة المرور القديمة غير صحيحة"
 }
