@@ -23,7 +23,6 @@ export interface ITrip extends Document {
     type: 'Point';
     coordinates: [number, number];
   };
-  tripType: 'local' | 'international';
   isAdvertisement: boolean;
   price: number;
   rating: number;
@@ -110,7 +109,8 @@ export interface ICountry extends Document {
     en: string;
     ar?: string;
   };
-  flag?: string;
+  images?: string[];
   createdAt: Date;
   updatedAt: Date;
+  tripType: 'local' | 'international';
 }

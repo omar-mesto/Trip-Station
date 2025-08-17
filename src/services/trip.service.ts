@@ -33,14 +33,15 @@ export const setTripAsAdvertisementService = async (id: string, isAd: boolean) =
   return trip;
 };
 
-
 export const listTripsService = async (page: number, limit: number, lang: Lang) => {
   const skip = (page - 1) * limit;
 
   const trips = await Trip.find()
     .populate('company', `name.${lang} rating`)
     .populate('country', `name.${lang}`)
-    .select(`_id price endDate startDate isAdvertisement tripType status images rating location company country name.${lang} description.${lang} geoLocation`)
+    .select(
+      `_id price endDate startDate isAdvertisement tripType status images rating location company country name.${lang} description.${lang} geoLocation`
+    )
     .skip(skip)
     .limit(limit)
     .lean();
@@ -57,7 +58,9 @@ export const listTripsService = async (page: number, limit: number, lang: Lang) 
       lng,
       tripType: trip.tripType,
       status: trip.status,
-      images: trip.images || [],
+      images: (trip.images || []).map(
+        (img: string) => `${process.env.BASE_URL}/uploads/tripImages/${img}`
+      ),
       startDate: trip.startDate,
       endDate: trip.endDate,
       companyName: (trip.company as any)?.name?.[lang] || null,
@@ -72,69 +75,29 @@ export const listTripsService = async (page: number, limit: number, lang: Lang) 
 
   return {
     data: formatted,
-    pagination: { total, page, limit, totalPages: Math.ceil(total / limit) },
+    pagination: {
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+    },
   };
 };
 
-export const listLocalTripsService = async (page: number, limit: number, lang: Lang) => {
-  const skip = (page - 1) * limit;
-
-  const trips = await Trip.find({ tripType: 'local' })
-    .select(`_id price images location name.${lang} description.${lang} geoLocation`)
-    .skip(skip)
-    .limit(limit)
+export const getTripsByCountryService = async (countryId: string, lang: Lang) => {
+  const trips = await Trip.find({ country: countryId })
+    .populate('company', `name.${lang} rating`)
+    .select(`_id images name.${lang} description.${lang}`)
     .lean();
 
-  const total = await Trip.countDocuments({ tripType: 'local' });
-
-  const formatted = trips.map((trip: any) => {
+  return trips.map((trip: any) => {
     return {
       id: trip._id,
-      price: trip.price,
       images: trip.images || [],
-      location: trip.location,
       name: trip.name?.[lang] ?? null,
       description: trip.description?.[lang] ?? null,
     };
   });
-
-  return {
-    data: formatted,
-    pagination: { total, page, limit, totalPages: Math.ceil(total / limit) },
-  };
-};
-
-export const listInternationalTripsService = async (page: number, limit: number, lang: Lang) => {
-  const skip = (page - 1) * limit;
-
-  const trips = await Trip.find({ tripType: 'international' })
-    .select(`_id price images startDate endDate location name.${lang} description.${lang} geoLocation`)
-    .skip(skip)
-    .limit(limit)
-    .lean();
-
-  const total = await Trip.countDocuments({ tripType: 'international' });
-
-  const formatted = trips.map((trip: any) => {
-    const { lat, lng } = extractLatLng(trip);
-    return {
-      id: trip._id,
-      price: trip.price,
-      images: trip.images || [],
-      location: trip.location,
-      startDate: trip.startDate,
-      endDate: trip.endDate,
-      lat,
-      lng,
-      name: trip.name?.[lang] ?? null,
-      description: trip.description?.[lang] ?? null,
-    };
-  });
-
-  return {
-    data: formatted,
-    pagination: { total, page, limit, totalPages: Math.ceil(total / limit) },
-  };
 };
 
 export const filterTripsService = async (filters: any, lang: Lang) => {
@@ -144,7 +107,7 @@ export const filterTripsService = async (filters: any, lang: Lang) => {
   if (filters.maxPrice) query.price = { ...query.price, $lte: Number(filters.maxPrice) };
   if (filters.rating) query.rating = Number(filters.rating);
   if (filters.type) query.tripType = filters.type;
-  if (filters.company) query.company = new mongoose.Types.ObjectId(filters.company);
+  if (filters.location) query.location = { $regex: filters.location, $options: 'i' };
 
   const trips = await Trip.find(query)
     .select(`_id price location name.${lang} description.${lang} geoLocation`)
@@ -182,7 +145,6 @@ export const getTripDetailsService = async (id: string, lang: Lang) => {
     lng,
     startDate: trip.startDate,
     endDate: trip.endDate,
-    tripType: trip.tripType,
     rating: trip.rating,
     status: trip.status,
     images: trip.images || [],
@@ -239,7 +201,6 @@ export const internationalAdsTripsService = async (lang: Lang) => {
   });
 };
 
-
 export const nearbyTripsService = async (lat: number, lng: number, lang: Lang): Promise<INearbyTrip[]> => {
   const trips = await Trip.aggregate([
     {
@@ -284,3 +245,39 @@ export const nearbyTripsService = async (lat: number, lng: number, lang: Lang): 
   });
 };
 
+export const listTripsByCountryService = async (
+  countryId: string,
+  page: number,
+  limit: number,
+  lang: string
+) => {
+  const skip = (page - 1) * limit;
+
+  const trips = await Trip.find({ country: countryId })
+    .select(`_id price status images location name.${lang} description.${lang}`)
+    .skip(skip)
+    .limit(limit)
+    .lean();
+
+  const total = await Trip.countDocuments({ country: countryId });
+
+  const formatted = trips.map((trip: any) => {
+    return {
+      id: trip._id,
+      price: trip.price,
+      countryId: countryId,
+      location: trip.location,
+      status: trip.status,
+      images: trip.images?.map(
+        (img: string) => `${process.env.BASE_URL}/uploads/tripImages/${img}`
+      ) || [],
+      name: trip.name?.[lang] ?? null,
+      description: trip.description?.[lang] ?? null,
+    };
+  });
+
+  return {
+    data: formatted,
+    pagination: { total, page, limit, totalPages: Math.ceil(total / limit) },
+  };
+};

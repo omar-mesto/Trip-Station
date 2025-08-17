@@ -12,6 +12,11 @@ if (!fs.existsSync(tripPath)) {
   fs.mkdirSync(tripPath, { recursive: true });
 }
 
+const countryPath = path.join(__dirname, "..", "uploads", "countryImages");
+if (!fs.existsSync(countryPath)) {
+  fs.mkdirSync(countryPath, { recursive: true });
+}
+
 const storageProfile = multer.diskStorage({
   destination: (req, file, cb) => {
     cb(null, profilePath);
@@ -30,5 +35,15 @@ const storageTrip = multer.diskStorage({
   },
 });
 
+const storageCountry = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, countryPath);
+  },
+  filename: (req, file, cb) => {
+    cb(null, Date.now() + "-" + file.originalname);
+  },
+});
+
 export const uploadProfileImage = multer({ storage: storageProfile });
 export const uploadTripImages = multer({ storage: storageTrip });
+export const uploadCountryImages = multer({ storage: storageCountry });

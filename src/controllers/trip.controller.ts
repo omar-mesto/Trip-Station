@@ -11,11 +11,10 @@ import {
   createTripService,
   updateTripService,
   deleteTripService,
-  listLocalTripsService,
-  listInternationalTripsService,
   setTripAsAdvertisementService,
   localAdsTripsService,
   internationalAdsTripsService,
+  listTripsByCountryService,
 } from '../services/trip.service';
 
 export const createTrip = asyncHandler(async (req: Request, res: Response) => {
@@ -28,7 +27,6 @@ export const createTrip = asyncHandler(async (req: Request, res: Response) => {
     return errorResponse(res, t('lat_lng_required', lang), 400);
   }
   const images = req.files ? (req.files as Express.Multer.File[]).map(f => f.filename) : [];
-  console.log("Files received:", req.files);
 
   const payload = {
     ...req.body,
@@ -37,9 +35,9 @@ export const createTrip = asyncHandler(async (req: Request, res: Response) => {
     startDate: req.body.startDate ? new Date(req.body.startDate) : undefined,
     endDate: req.body.endDate ? new Date(req.body.endDate) : undefined,
   };
-    if (payload.startDate && payload.endDate && payload.startDate > payload.endDate) {
-      return errorResponse(res, t('start_must_before_end', lang), 400);
-    }
+  if (payload.startDate && payload.endDate && payload.startDate > payload.endDate) {
+    return errorResponse(res, t('start_must_before_end', lang), 400);
+  }
   const trip = await createTripService(payload as any);
 
   return successResponse(res, t('trip_created', lang), trip, 201);
@@ -99,24 +97,6 @@ export const getTrips = asyncHandler(async (req: Request, res: Response) => {
   return successResponse(res, trips);
 });
 
-export const getLocalTrips = asyncHandler(async (req: Request, res: Response) => {
-  const lang = getLang(req);
-  const page = parseInt(req.query.page as string) || 1;
-  const limit = parseInt(req.query.limit as string) || 10;
-
-  const trips = await listLocalTripsService(page, limit, lang);
-  return successResponse(res, trips);
-});
-
-export const getInternationalTrips = asyncHandler(async (req: Request, res: Response) => {
-  const lang = getLang(req);
-  const page = parseInt(req.query.page as string) || 1;
-  const limit = parseInt(req.query.limit as string) || 10;
-
-  const trips = await listInternationalTripsService(page, limit, lang);
-  return successResponse(res, trips);
-});
-
 export const getTripDetails = asyncHandler(async (req: Request, res: Response) => {
   const lang = getLang(req);
   const trip = await getTripDetailsService(req.params.id, lang);
@@ -154,3 +134,18 @@ export const getInternationalAdsTrips = asyncHandler(async (req: Request, res: R
   const trips = await internationalAdsTripsService(lang);
   return successResponse(res, trips);
 });
+
+export const listTripsByCountry = async (req: Request, res: Response) => {
+  try {
+    const { countryId } = req.params;
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 10;
+    const lang = (req.query.lang as string) || 'en';
+
+    const result = await listTripsByCountryService(countryId, page, limit, lang);
+
+    res.json({ success: true, message: 'Success', ...result });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Server Error', error });
+  }
+};

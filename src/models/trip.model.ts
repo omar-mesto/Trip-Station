@@ -28,7 +28,7 @@ const tripSchema = new Schema<ITrip>(
       required: true,
       set: (val: string) => {
         const d = new Date(val);
-        d.setUTCHours(0, 0, 0, 0); // تصفير الوقت
+        d.setUTCHours(0, 0, 0, 0);
         return d;
       }
     },
@@ -41,7 +41,6 @@ const tripSchema = new Schema<ITrip>(
         return d;
       }
     },
-    tripType: { type: String, enum: ['local', 'international'], default: 'international' },
     isAdvertisement: { type: Boolean, default: false },
     price: { type: Number, required: true },
     rating: { type: Number, default: 0 },
