@@ -40,8 +40,8 @@ export const listFavoritesService = async (
         lng:trip.lan,
         startDate: trip.startDate ?? null,
         endDate: trip.endDate ?? null,
-        [`name_${lang}`]: trip.name?.[lang] ?? null,
-        [`description_${lang}`]: trip.description?.[lang] ?? null,
+        name: trip.name?.[lang] ?? null,
+        description: trip.description?.[lang] ?? null,
       };
     })
     .filter(Boolean);

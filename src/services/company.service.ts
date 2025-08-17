@@ -28,7 +28,7 @@ export const listCompaniesService = async (page: number, limit: number, lang: st
     logo: company.logo,
     rating: company.rating,
     contact: company.contact,
-    [`name_${lang}`]: (company.name as any)[lang] || null
+    name: (company.name as any)[lang] || null
   }));
 
   return {

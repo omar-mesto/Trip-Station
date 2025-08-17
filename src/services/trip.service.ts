@@ -65,8 +65,8 @@ export const listTripsService = async (page: number, limit: number, lang: Lang) 
       countryName: (trip.country as any)?.name?.[lang] || null,
       location: trip.location,
       rating: trip.rating,
-      [`name_${lang}`]: trip.name?.[lang] ?? null,
-      [`description_${lang}`]: trip.description?.[lang] ?? null,
+      name: trip.name?.[lang] ?? null,
+      description: trip.description?.[lang] ?? null,
     };
   });
 
@@ -80,7 +80,7 @@ export const listLocalTripsService = async (page: number, limit: number, lang: L
   const skip = (page - 1) * limit;
 
   const trips = await Trip.find({ tripType: 'local' })
-    .select(`_id price images startDate endDate location name.${lang} description.${lang} geoLocation`)
+    .select(`_id price images location name.${lang} description.${lang} geoLocation`)
     .skip(skip)
     .limit(limit)
     .lean();
@@ -88,18 +88,13 @@ export const listLocalTripsService = async (page: number, limit: number, lang: L
   const total = await Trip.countDocuments({ tripType: 'local' });
 
   const formatted = trips.map((trip: any) => {
-    const { lat, lng } = extractLatLng(trip);
     return {
       id: trip._id,
       price: trip.price,
       images: trip.images || [],
       location: trip.location,
-      lat,
-      lng,
-      startDate: trip.startDate,
-      endDate: trip.endDate,
-      [`name_${lang}`]: trip.name?.[lang] ?? null,
-      [`description_${lang}`]: trip.description?.[lang] ?? null,
+      name: trip.name?.[lang] ?? null,
+      description: trip.description?.[lang] ?? null,
     };
   });
 
@@ -131,8 +126,8 @@ export const listInternationalTripsService = async (page: number, limit: number,
       endDate: trip.endDate,
       lat,
       lng,
-      [`name_${lang}`]: trip.name?.[lang] ?? null,
-      [`description_${lang}`]: trip.description?.[lang] ?? null,
+      name: trip.name?.[lang] ?? null,
+      description: trip.description?.[lang] ?? null,
     };
   });
 
@@ -141,7 +136,6 @@ export const listInternationalTripsService = async (page: number, limit: number,
     pagination: { total, page, limit, totalPages: Math.ceil(total / limit) },
   };
 };
-
 
 export const filterTripsService = async (filters: any, lang: Lang) => {
   const query: any = {};
@@ -164,35 +158,11 @@ export const filterTripsService = async (filters: any, lang: Lang) => {
       location: trip.location,
       lat,
       lng,
-      [`name_${lang}`]: trip.name?.[lang] ?? null,
-      [`description_${lang}`]: trip.description?.[lang] ?? null,
+      name: trip.name?.[lang] ?? null,
+      description: trip.description?.[lang] ?? null,
     };
   });
 };
-
-
-export const advertisementTripsService = async (type: 'local' | 'international', lang: Lang) => {
-  const trips = await Trip.find({ isAdvertisement: true, tripType: type })
-    .select(`_id price location startDate endDate name.${lang} images description.${lang} geoLocation`)
-    .lean();
-
-  return trips.map((trip: any) => {
-    const { lat, lng } = extractLatLng(trip);
-    return {
-      id: trip._id,
-      price: trip.price,
-      images: trip.images || [],
-      location: trip.location,
-      lat,
-      lng,
-      startDate: trip.startDate,
-      endDate: trip.endDate,
-      [`name_${lang}`]: trip.name?.[lang] ?? null,
-      [`description_${lang}`]: trip.description?.[lang] ?? null,
-    };
-  });
-};
-
 
 export const getTripDetailsService = async (id: string, lang: Lang) => {
   const trip = await Trip.findById(id)
@@ -228,21 +198,20 @@ export const getTripDetailsService = async (id: string, lang: Lang) => {
 
 export const localAdsTripsService = async (lang: Lang) => {
   const trips = await Trip.find({ isAdvertisement: true, tripType: "local" })
-    .select(`_id price location name.${lang} images description.${lang} geoLocation rating`)
+    .select(`_id price startDate endDate location name.${lang} images description.${lang} geoLocation rating`)
     .lean();
 
   return trips.map((trip: any) => {
-    const { lat, lng } = extractLatLng(trip);
     return {
       id: trip._id,
       price: trip.price,
       images: trip.images || [],
+      startDate: trip.startDate,
+      endDate: trip.endDate,
       location: trip.location,
       rating: trip.rating ?? null,
-      lat,
-      lng,
-      [`name_${lang}`]: trip.name?.[lang] ?? null,
-      [`description_${lang}`]: trip.description?.[lang] ?? null,
+      name: trip.name?.[lang] ?? null,
+      description: trip.description?.[lang] ?? null,
     };
   });
 };
@@ -264,8 +233,8 @@ export const internationalAdsTripsService = async (lang: Lang) => {
       endDate: trip.endDate,
       lat,
       lng,
-      [`name_${lang}`]: trip.name?.[lang] ?? null,
-      [`description_${lang}`]: trip.description?.[lang] ?? null,
+      name: trip.name?.[lang] ?? null,
+      description: trip.description?.[lang] ?? null,
     };
   });
 };

@@ -26,7 +26,7 @@ export const listCountriesService = async (page: number, limit: number, lang: st
   const formatted = countries.map(country => ({
     id: country._id,
     flag: country.flag,
-    [`name_${lang}`]: (country.name as any)?.[lang] || null
+    name: (country.name as any)?.[lang] || null
   }));
 
   return {
