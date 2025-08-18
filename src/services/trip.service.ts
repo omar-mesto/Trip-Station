@@ -58,9 +58,7 @@ export const listTripsService = async (page: number, limit: number, lang: Lang) 
       lng,
       tripType: trip.tripType,
       status: trip.status,
-      images: (trip.images || []).map(
-        (img: string) => `${process.env.BASE_URL}/uploads/tripImages/${img}`
-      ),
+      images: Array.isArray(trip.images)? trip.images.map((img: string) =>`${process.env.BASE_URL}/uploads/tripImages/${img}`):[],
       startDate: trip.startDate,
       endDate: trip.endDate,
       companyName: (trip.company as any)?.name?.[lang] || null,
@@ -93,7 +91,7 @@ export const getTripsByCountryService = async (countryId: string, lang: Lang) =>
   return trips.map((trip: any) => {
     return {
       id: trip._id,
-      images: trip.images || [],
+      images: Array.isArray(trip.images)? trip.images.map((img: string) =>`${process.env.BASE_URL}/uploads/tripImages/${img}`):[],
       name: trip.name?.[lang] ?? null,
       description: trip.description?.[lang] ?? null,
     };
@@ -102,7 +100,6 @@ export const getTripsByCountryService = async (countryId: string, lang: Lang) =>
 
 export const filterTripsService = async (filters: any, lang: Lang) => {
   const query: any = {};
-
   if (filters.minPrice) query.price = { $gte: Number(filters.minPrice) };
   if (filters.maxPrice) query.price = { ...query.price, $lte: Number(filters.maxPrice) };
   if (filters.rating) query.rating = Number(filters.rating);
@@ -110,17 +107,16 @@ export const filterTripsService = async (filters: any, lang: Lang) => {
   if (filters.location) query.location = { $regex: filters.location, $options: 'i' };
 
   const trips = await Trip.find(query)
-    .select(`_id price location name.${lang} description.${lang} geoLocation`)
+    .select(`_id price images rating location name.${lang} description.${lang} geoLocation`)
     .lean();
 
   return trips.map((trip: any) => {
-    const { lat, lng } = extractLatLng(trip);
     return {
       id: trip._id,
       price: trip.price,
+      rating:trip.rating,
+      images: Array.isArray(trip.images)? trip.images.map((img: string) =>`${process.env.BASE_URL}/uploads/tripImages/${img}`):[], 
       location: trip.location,
-      lat,
-      lng,
       name: trip.name?.[lang] ?? null,
       description: trip.description?.[lang] ?? null,
     };
@@ -147,7 +143,7 @@ export const getTripDetailsService = async (id: string, lang: Lang) => {
     endDate: trip.endDate,
     rating: trip.rating,
     status: trip.status,
-    images: trip.images || [],
+    images: Array.isArray(trip.images)? trip.images.map((img: string) =>`${process.env.BASE_URL}/uploads/tripImages/${img}`):[],
     company: {
       name: (trip.company as any)?.name?.[lang] ?? null,
       rating: (trip.company as any)?.rating ?? 0,
@@ -167,7 +163,7 @@ export const localAdsTripsService = async (lang: Lang) => {
     return {
       id: trip._id,
       price: trip.price,
-      images: trip.images || [],
+      images: Array.isArray(trip.images)? trip.images.map((img: string) =>`${process.env.BASE_URL}/uploads/tripImages/${img}`):[],
       startDate: trip.startDate,
       endDate: trip.endDate,
       location: trip.location,
@@ -188,7 +184,7 @@ export const internationalAdsTripsService = async (lang: Lang) => {
     return {
       id: trip._id,
       price: trip.price,
-      images: trip.images || [],
+      images: Array.isArray(trip.images)? trip.images.map((img: string) =>`${process.env.BASE_URL}/uploads/tripImages/${img}`):[],
       location: trip.location,
       rating: trip.rating ?? null,
       startDate: trip.startDate,
@@ -247,20 +243,11 @@ export const nearbyTripsService = async (lat: number, lng: number, lang: Lang): 
 
 export const listTripsByCountryService = async (
   countryId: string,
-  page: number,
-  limit: number,
   lang: string
 ) => {
-  const skip = (page - 1) * limit;
-
   const trips = await Trip.find({ country: countryId })
     .select(`_id price status images location name.${lang} description.${lang}`)
-    .skip(skip)
-    .limit(limit)
     .lean();
-
-  const total = await Trip.countDocuments({ country: countryId });
-
   const formatted = trips.map((trip: any) => {
     return {
       id: trip._id,
@@ -268,9 +255,7 @@ export const listTripsByCountryService = async (
       countryId: countryId,
       location: trip.location,
       status: trip.status,
-      images: trip.images?.map(
-        (img: string) => `${process.env.BASE_URL}/uploads/tripImages/${img}`
-      ) || [],
+      images: Array.isArray(trip.images)? trip.images.map((img: string) =>`${process.env.BASE_URL}/uploads/tripImages/${img}`):[],
       name: trip.name?.[lang] ?? null,
       description: trip.description?.[lang] ?? null,
     };
@@ -278,6 +263,5 @@ export const listTripsByCountryService = async (
 
   return {
     data: formatted,
-    pagination: { total, page, limit, totalPages: Math.ceil(total / limit) },
   };
 };

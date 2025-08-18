@@ -138,12 +138,8 @@ export const getInternationalAdsTrips = asyncHandler(async (req: Request, res: R
 export const listTripsByCountry = async (req: Request, res: Response) => {
   try {
     const { countryId } = req.params;
-    const page = parseInt(req.query.page as string) || 1;
-    const limit = parseInt(req.query.limit as string) || 10;
     const lang = (req.query.lang as string) || 'en';
-
-    const result = await listTripsByCountryService(countryId, page, limit, lang);
-
+    const result = await listTripsByCountryService(countryId, lang);
     res.json({ success: true, message: 'Success', ...result });
   } catch (error) {
     res.status(500).json({ success: false, message: 'Server Error', error });

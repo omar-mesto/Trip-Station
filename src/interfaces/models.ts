@@ -34,6 +34,7 @@ export interface ITrip extends Document {
   updatedAt: Date;
   startDate: Date;
   endDate: Date;
+  tripType: 'local' | 'international';
 }
 
 export interface INearbyTrip {
