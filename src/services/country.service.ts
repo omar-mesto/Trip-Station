@@ -32,11 +32,10 @@ export const listCountriesService = async (
     name: country.name?.[lang] || country.name?.en || null,
     tripType: country.tripType,
     images: Array.isArray(country.images)
-      ? country.images.map(
-          (img: string) =>
-            `${process.env.BASE_URL}/uploads/countryImages/${img}`
-        )
-      : [],
+  ? country.images.map(
+      (img: string) => `${process.env.BASE_URL}/uploads/countryImages/${img}`
+    )
+  : [],
   }));
 
   return {
