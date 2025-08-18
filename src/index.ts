@@ -27,7 +27,7 @@ app.use(cors({
 app.use(express.json());
 app.use(morgan('dev'));
 
-app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 app.get('/healthz', (_, res) => res.status(200).send('ok'));
 

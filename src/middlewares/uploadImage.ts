@@ -38,10 +38,9 @@ const storageTrip = multer.diskStorage({
 const storageCountry = multer.diskStorage({
   destination: (req, file, cb) => {
     cb(null, countryPath);
-    console.log(countryPath)
   },
   filename: (req, file, cb) => {
-    cb(null, Date.now() + "-" + countryPath);
+    cb(null, Date.now() + "-" + file.originalname);
   },
 });
 
