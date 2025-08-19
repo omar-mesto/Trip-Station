@@ -1,6 +1,7 @@
 import mongoose from 'mongoose';
 import { INearbyTrip, ITrip } from '../interfaces/models';
 import Trip from '../models/trip.model';
+import favoriteModel from '../models/favorite.model';
 
 type Lang = 'ar' | 'en';
 
@@ -123,16 +124,26 @@ export const filterTripsService = async (filters: any, lang: Lang) => {
   });
 };
 
-export const getTripDetailsService = async (id: string, lang: Lang) => {
+export const getTripDetailsService = async (id: string, lang: Lang, userId?: string) => {
   const trip = await Trip.findById(id)
-    .populate('company', `name.${lang} rating`)
-    .populate('country', `name.${lang}`)
+    .populate('company', `name rating contact`)
+    .populate('country', `name`)
     .lean();
 
-  if (!trip) return null;
+  if (!trip) {
+    return null;
+  }
 
   const { lat, lng } = extractLatLng(trip);
 
+  let isFavorited = false;
+  if (userId) {
+    const favoriteExists = await favoriteModel.exists({
+      user: userId,
+      trip: id,
+    });
+    isFavorited = !!favoriteExists;
+  }
   return {
     id: trip._id,
     price: trip.price,
@@ -143,14 +154,23 @@ export const getTripDetailsService = async (id: string, lang: Lang) => {
     endDate: trip.endDate,
     rating: trip.rating,
     status: trip.status,
-    images: Array.isArray(trip.images)? trip.images.map((img: string) =>`${process.env.BASE_URL}/uploads/tripImages/${img}`):[],
+    images: Array.isArray(trip.images) 
+      ? trip.images.map((img: string) => `${process.env.BASE_URL}/uploads/tripImages/${img}`) 
+      : [],
     company: {
-      name: (trip.company as any)?.name?.[lang] ?? null,
+      name: (trip.company as any)?.name?.[lang] ?? (trip.company as any)?.name ?? null,
       rating: (trip.company as any)?.rating ?? 0,
+      contact: {
+        whatsapp: (trip.company as any)?.contact?.whatsapp ?? null,
+        facebook: (trip.company as any)?.contact?.facebook ?? null,
+        website: (trip.company as any)?.contact?.website ?? null,
+        instagram: (trip.company as any)?.contact?.instagram ?? null,
+      }
     },
-    country: (trip.country as any)?.name?.[lang] ?? null,
-    name: trip.name?.[lang] ?? null,
-    description: trip.description?.[lang] ?? null,
+    country: (trip.country as any)?.name?.[lang] ?? (trip.country as any)?.name ?? null,
+    name: trip.name?.[lang] ?? trip.name ?? null,
+    description: trip.description?.[lang] ?? trip.description ?? null,
+    isFavorited
   };
 };
 

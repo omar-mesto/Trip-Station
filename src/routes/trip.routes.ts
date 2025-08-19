@@ -13,7 +13,7 @@ import {
   removeTripFromAdvertisement,
   listTripsByCountry
 } from '../controllers/trip.controller';
-import { authorize, protect } from '../middlewares/auth';
+import { authenticateUser, authorize, protect } from '../middlewares/auth';
 import { uploadTripImages } from '../middlewares/uploadImage';
 
 const router = express.Router();
@@ -35,6 +35,6 @@ router.delete('/:id', protect, authorize('admin'), deleteTrip);
 router.put('/advertise/:id', protect, authorize('admin'), setTripAsAdvertisement);
 router.put('/unadvertise/:id', protect, authorize('admin'), removeTripFromAdvertisement);
 
-router.get('/:id', protect, getTripDetails);
+router.get('/:id', authenticateUser, getTripDetails);
 
 export default router;

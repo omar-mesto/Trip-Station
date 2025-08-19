@@ -1,6 +1,5 @@
 import User from '../models/user.model';
 import Admin from '../models/admin.model';
-import bcrypt from 'bcryptjs';
 import { generateAccessToken } from '../utils/token';
 import { t } from '../config/i18n';
 import { IAdminAccount, IUserAccount, LoginPayload, RegisterPayload } from '../interfaces/models';
@@ -69,9 +68,15 @@ export const updateUserProfileService = async (
   if (!user) throw new Error(t('user_not_found', lang));
 
   if (payload.oldPassword && payload.newPassword) {
+    const isMatch = await user.comparePassword(payload.oldPassword);
+    if (!isMatch) {
+      throw new Error(t('invalid_old_password', lang));
+    }
+
     if (payload.newPassword.length < 6) {
       throw new Error(t('password_min_length', lang));
     }
+
     user.password = payload.newPassword;
   }
 
@@ -81,4 +86,5 @@ export const updateUserProfileService = async (
   await user.save();
   return user;
 };
+
 

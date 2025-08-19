@@ -90,37 +90,8 @@ export const userUpdateProfile = async (req: Request & { user?: any }, res: Resp
   }
 };
 
-export const changePassword = asyncHandler(async (req: Request & { user?: any }, res: Response) => {
-  const lang = getLang(req);
-  const { oldPassword, newPassword } = req.body;
-
-  if (!req.user) return errorResponse(res, t('unauthorized', lang), 401);
-
-  const user = await User.findById(req.user._id);
-  if (!user) return errorResponse(res, t('user_not_found', lang), 404);
-
-  const isMatch = await user.comparePassword(oldPassword);
-  if (!isMatch) return errorResponse(res, t('invalid_old_password', lang), 400);
-
-  if (!newPassword || newPassword.length < 6) {
-    return errorResponse(res, t('password_min_length', lang), 400);
-  }
-
-  user.password = newPassword;
-  await user.save();
-
-  return successResponse(res, t('password_changed_success', lang));
-});
-
-
 export const logout = asyncHandler(async (req: Request, res: Response) => {
   const lang = getLang(req);
-  await logoutService();
-  res.clearCookie('accessToken', {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'strict',
-  });
-
   return successResponse(res, t('Logged out successfully', lang));
 });
+
