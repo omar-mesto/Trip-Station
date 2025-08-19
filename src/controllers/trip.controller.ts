@@ -99,7 +99,7 @@ export const getTrips = asyncHandler(async (req: Request, res: Response) => {
 
 export const getTripDetails = asyncHandler(async (req: Request, res: Response) => {
   const lang = getLang(req);
-  const userId = (req as any).user?.id;
+  const userId = (req as any).user?._id.toString();
   const trip = await getTripDetailsService(req.params.id, lang, userId);
   if (!trip) return errorResponse(res, t("trip_not_found", lang), 404);
   return successResponse(res, trip);
