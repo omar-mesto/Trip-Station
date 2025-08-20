@@ -2,6 +2,7 @@ import mongoose from 'mongoose';
 import { INearbyTrip, ITrip } from '../interfaces/models';
 import Trip from '../models/trip.model';
 import favoriteModel from '../models/favorite.model';
+import { t } from '../config/i18n';
 
 type Lang = 'ar' | 'en';
 
@@ -101,6 +102,11 @@ export const getTripsByCountryService = async (countryId: string, lang: Lang) =>
 
 export const filterTripsService = async (filters: any, lang: Lang) => {
   const query: any = {};
+
+  if (!filters.countryId) {
+    throw new Error(t('countryId is required', lang));
+  }
+  query.country = new mongoose.Types.ObjectId(filters.countryId);
   if (filters.minPrice) query.price = { $gte: Number(filters.minPrice) };
   if (filters.maxPrice) query.price = { ...query.price, $lte: Number(filters.maxPrice) };
   if (filters.rating) query.rating = Number(filters.rating);

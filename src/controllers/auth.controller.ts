@@ -48,7 +48,7 @@ export const login = async (req: Request, res: Response) => {
       accessToken,
     });
   } catch (error: any) {
-    return errorResponse(res, error.message || t('login_failed', lang), 500);
+    return errorResponse(res, t('login_failed', lang), 500);
   }
 };
 
@@ -86,7 +86,7 @@ export const userUpdateProfile = async (req: Request & { user?: any }, res: Resp
       },
     });
   } catch (error: any) {
-    return errorResponse(res, error.message || t('user_not_found', lang), 400);
+    return errorResponse(res, t('user_not_found', lang), 400);
   }
 };
 

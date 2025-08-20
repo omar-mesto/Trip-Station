@@ -63,5 +63,6 @@
   "Favorite not found":"لم يتم العثور على الرحلة المفضلة",
   "Removed from favorites":"تم الازالة من المفضلة",
   "password_min_length":"كلمة المرور يجب ان تكون اكبر من 6 محارف",
-  "invalid_old_password":"كلمة المرور القديمة غير صحيحة"
+  "invalid_old_password":"كلمة المرور القديمة غير صحيحة",
+  "countryId is required":"معرف الدولة مطلوب"
 }
