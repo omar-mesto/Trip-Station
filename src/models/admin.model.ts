@@ -6,6 +6,7 @@ const adminSchema = new Schema<IAdmin>({
   fullName: { type: String, required: true },
   email: { type: String, unique: true, required: true,lowercase: true },
   password: { type: String, required: true },
+  profileImage: String,
   role: { type: String, default: 'admin' },
 }, { timestamps: true });
 

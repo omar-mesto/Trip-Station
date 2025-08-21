@@ -44,6 +44,21 @@ const storageCountry = multer.diskStorage({
   },
 });
 
+const adminPath = path.join(__dirname, "..", "uploads", "adminImages");
+if (!fs.existsSync(adminPath)) {
+  fs.mkdirSync(adminPath, { recursive: true });
+}
+
+const storageAdmin = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, adminPath);
+  },
+  filename: (req, file, cb) => {
+    cb(null, Date.now() + "-" + file.originalname);
+  },
+});
+
+export const uploadAdminImage = multer({ storage: storageAdmin });
 export const uploadProfileImage = multer({ storage: storageProfile });
 export const uploadTripImages = multer({ storage: storageTrip });
 export const uploadCountryImages = multer({ storage: storageCountry });

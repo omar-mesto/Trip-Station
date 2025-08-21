@@ -1,4 +1,6 @@
 import User from '../models/user.model';
+import Admin from '../models/admin.model';
+import { t } from '../config/i18n';
 
 export const getDashboardStatsService = async (lang: 'en' | 'ar') => {
   const User = (await import('../models/user.model')).default;
@@ -29,3 +31,32 @@ export const toggleBlockUserService = async (id: string) => {
   await user.save();
   return user;
 };
+
+export const updateAdminProfileService = async (
+  adminId: string,
+  payload: { fullName?: string; oldPassword?: string; newPassword?: string },
+  lang: 'en' | 'ar',
+  file?: Express.Multer.File
+) => {
+  const admin = await Admin.findById(adminId);
+  if (!admin) throw new Error(t('user_not_found', lang));
+  if (payload.fullName) {
+    admin.fullName = payload.fullName;
+  }
+  if (payload.oldPassword && payload.newPassword) {
+    const isMatch = await admin.comparePassword(payload.oldPassword);
+    if (!isMatch) throw new Error(t('invalid_old_password', lang));
+
+    if (payload.newPassword.length < 6) {
+      throw new Error(t('password_min_length', lang));
+    }
+    admin.password = payload.newPassword;
+  }
+  if (file) {
+    admin.set("profileImage", `/uploads/adminImages/${file.filename}`);
+  }
+
+  await admin.save();
+  return admin;
+};
+

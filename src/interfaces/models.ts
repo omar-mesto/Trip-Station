@@ -83,6 +83,7 @@ export interface IAdmin extends Document {
   email: string;
   password: string;
   role: string;
+  profileImage?: string;
   comparePassword(candidatePassword: string): Promise<boolean>;
 }
 
