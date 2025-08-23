@@ -21,13 +21,14 @@ export const getDashboardStatsService = async (lang: 'en' | 'ar') => {
 };
 
 export const listUsersService = async (page: number, limit: number) => {
+  const skip = (page - 1) * limit;
   const users = await User.find()
     .select("_id fullName email profileImage isBlocked")
-    .skip((page - 1) * limit)
+    .skip(skip)
     .limit(limit)
     .lean();
-
-  return users.map((user: any) => ({
+  const total = await User.countDocuments();
+  const formatted = users.map((user: any) => ({
     id: user._id,
     fullName: user.fullName,
     email: user.email,
@@ -36,6 +37,16 @@ export const listUsersService = async (page: number, limit: number) => {
       ? `${process.env.BASE_URL}/uploads/profileImages/${path.basename(user.profileImage)}`
       : null,
   }));
+
+  return {
+    data: formatted,
+    pagination: {
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+    },
+  };
 };
 
 export const toggleBlockUserService = async (id: string) => {
