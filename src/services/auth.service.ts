@@ -87,4 +87,6 @@ export const updateUserProfileService = async (
   return user;
 };
 
-
+export const deleteUserService = async (userId: string) => {
+  return User.findByIdAndDelete(userId);
+};

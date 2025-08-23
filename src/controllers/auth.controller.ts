@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { userRegisterService, updateUserProfileService, logoutService } from '../services/auth.service';
+import { userRegisterService, updateUserProfileService, logoutService, deleteUserService } from '../services/auth.service';
 import { successResponse, errorResponse } from '../utils/response';
 import { t } from '../config/i18n';
 import { asyncHandler } from '../middlewares/asyncHandler';
@@ -95,3 +95,15 @@ export const logout = asyncHandler(async (req: Request, res: Response) => {
   return successResponse(res, t('Logged out successfully', lang));
 });
 
+export const deleteUser = asyncHandler(async (req: Request, res: Response) => {
+  const lang = getLang(req);
+
+  const userId = (req as any).user._id;
+  const deletedUser = await deleteUserService(userId);
+
+  if (!deletedUser) {
+    return errorResponse(res, t('user_not_found', lang), 404);
+  }
+
+  return successResponse(res, t('account_deleted_successfully', lang));
+});
