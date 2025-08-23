@@ -32,9 +32,7 @@ export const listUsersService = async (page: number, limit: number) => {
     fullName: user.fullName,
     email: user.email,
     isBlocked: user.isBlocked,
-    profileImage: user.profileImage
-      ? `${process.env.BASE_URL}/uploads/profileImages${user.profileImage}`
-      : null,
+   profileImage: Array.isArray(user.profileImage)? user.profileImage.map((img: string) =>`${process.env.BASE_URL}/uploads/profileImages/${img}`):[],
   }));
 
   return {
