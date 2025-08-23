@@ -33,7 +33,7 @@ export const listUsersService = async (page: number, limit: number) => {
     email: user.email,
     isBlocked: user.isBlocked,
     profileImage: user.profileImage
-      ? `${process.env.BASE_URL}/uploads/profileImages/${user.profileImage}`
+      ? `${process.env.BASE_URL}/uploads/profileImages${user.profileImage}`
       : null,
   }));
 
