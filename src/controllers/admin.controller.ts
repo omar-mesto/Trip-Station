@@ -14,7 +14,9 @@ export const getDashboardStats = asyncHandler(async (req: Request, res: Response
 export const getUsers = asyncHandler(async (req: Request, res: Response) => {
   const page = parseInt(req.query.page as any) || 1;
   const limit = parseInt(req.query.limit as any) || 10;
+
   const data = await listUsersService(page, limit);
+
   return successResponse(res, data);
 });
 
