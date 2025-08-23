@@ -1,6 +1,7 @@
 import User from '../models/user.model';
 import Admin from '../models/admin.model';
 import { t } from '../config/i18n';
+import path from 'path';
 
 export const getDashboardStatsService = async (lang: 'en' | 'ar') => {
   const User = (await import('../models/user.model')).default;
@@ -20,28 +21,21 @@ export const getDashboardStatsService = async (lang: 'en' | 'ar') => {
 };
 
 export const listUsersService = async (page: number, limit: number) => {
-  const total = await User.countDocuments();
   const users = await User.find()
-    .select(`_id fullName email profileImage isBlocked`)
+    .select("_id fullName email profileImage isBlocked")
     .skip((page - 1) * limit)
     .limit(limit)
     .lean();
 
-  const data = users.map((user: any) => ({
+  return users.map((user: any) => ({
     id: user._id,
     fullName: user.fullName,
     email: user.email,
     isBlocked: user.isBlocked,
-   profileImage: Array.isArray(user.profileImage)? user.profileImage.map((img: string) =>`${process.env.BASE_URL}/uploads/profileImages/${img}`):[],
+    profileImage: user.profileImage
+      ? `${process.env.BASE_URL}/uploads/profileImages/${path.basename(user.profileImage)}`
+      : null,
   }));
-
-  return {
-    total,
-    page,
-    limit,
-    totalPages: Math.ceil(total / limit),
-    data,
-  };
 };
 
 export const toggleBlockUserService = async (id: string) => {
