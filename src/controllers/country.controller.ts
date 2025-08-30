@@ -43,7 +43,11 @@ export const deleteCountry = asyncHandler(async (req: Request, res: Response) =>
 export const getCountries = asyncHandler(async (req: Request, res: Response) => {
   const lang = getLang(req);
 
-  const countries = await listCountriesService(lang);
+  const page = parseInt(req.query.page as string) || 1;
+  const limit = parseInt(req.query.limit as string) || 10;
+
+  const countries = await listCountriesService(page, limit, lang);
+
   return successResponse(res, countries);
 });
 

@@ -70,13 +70,23 @@ export const userRegister = async (req: Request, res: Response) => {
   }
 };
 
-export const userUpdateProfile = async (req: Request & { user?: any }, res: Response) => {
+export const userUpdateProfile = async (
+  req: Request & { user?: any },
+  res: Response
+) => {
   const lang = getLang(req);
   if (!req.user) return errorResponse(res, t('unauthorized', lang), 401);
+
   try {
     if (req.body.email) delete req.body.email;
 
-    const updatedUser = await updateUserProfileService(req.user._id, req.body, lang, req.file);
+    const updatedUser = await updateUserProfileService(
+      req.user._id,
+      req.body,
+      lang,
+      req.file
+    );
+
     return successResponse(res, {
       user: {
         _id: updatedUser._id,
@@ -86,9 +96,10 @@ export const userUpdateProfile = async (req: Request & { user?: any }, res: Resp
       },
     });
   } catch (error: any) {
-    return errorResponse(res, t('user_not_found', lang), 400);
+    return errorResponse(res, error.message, 400);
   }
 };
+
 
 export const logout = asyncHandler(async (req: Request, res: Response) => {
   const lang = getLang(req);
