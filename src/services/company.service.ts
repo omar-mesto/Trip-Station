@@ -16,7 +16,7 @@ export const listCompaniesService = async (page: number, limit: number, lang: st
   const skip = (page - 1) * limit;
 
   const companies = await companyModel.find()
-    .select(`_id name.${lang} rating logo contact`)
+    .select(`_id name rating logo contact`)
     .skip(skip)
     .limit(limit)
     .lean();
@@ -28,7 +28,7 @@ export const listCompaniesService = async (page: number, limit: number, lang: st
     logo: company.logo,
     rating: company.rating,
     contact: company.contact,
-    name: (company.name as any)[lang] || null
+    name: company.name
   }));
 
   return {

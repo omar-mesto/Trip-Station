@@ -39,10 +39,10 @@ export const listTripsService = async (page: number, limit: number, lang: Lang) 
   const skip = (page - 1) * limit;
 
   const trips = await Trip.find()
-    .populate('company', `name.${lang} rating`)
-    .populate('country', `name.${lang}`)
+    .populate('company', `name rating`)
+    .populate('country', `name`)
     .select(
-      `_id price endDate startDate isAdvertisement tripType status images rating location company country name.${lang} description.${lang} geoLocation`
+      `_id price endDate startDate isAdvertisement tripType status images rating location company country name description geoLocation`
     )
     .skip(skip)
     .limit(limit)
@@ -63,13 +63,13 @@ export const listTripsService = async (page: number, limit: number, lang: Lang) 
       images: Array.isArray(trip.images)? trip.images.map((img: string) =>`${process.env.BASE_URL}/uploads/tripImages/${img}`):[],
       startDate: trip.startDate,
       endDate: trip.endDate,
-      companyName: (trip.company as any)?.name?.[lang] || null,
+      companyName: (trip.company as any)?.name || null,
       companyRating: (trip.company as any)?.rating ?? null,
-      countryName: (trip.country as any)?.name?.[lang] || null,
+      countryName: (trip.country as any)?.name || null,
       location: trip.location,
       rating: trip.rating,
-      name: trip.name?.[lang] ?? null,
-      description: trip.description?.[lang] ?? null,
+      name: trip.name ?? null,
+      description: trip.description ?? null,
     };
   });
 
@@ -243,6 +243,7 @@ export const nearbyTripsService = async (lat: number, lng: number, lang: Lang): 
         geoLocation: 1,
         name: `$name.${lang}`,
         description: `$description.${lang}`,
+        images: 1, 
       },
     },
   ]);
@@ -263,6 +264,7 @@ export const nearbyTripsService = async (lat: number, lng: number, lang: Lang): 
       description: trip.description ?? null,
       startDate: trip.startDate ?? null,
       endDate: trip.endDate ?? null,
+      images: Array.isArray(trip.images) ? trip.images.map((img: string) => `${process.env.BASE_URL}/uploads/tripImages/${img}`) : [],
     };
   });
 };

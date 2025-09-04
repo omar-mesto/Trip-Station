@@ -25,7 +25,7 @@ export const listCountriesService = async (
     .lean();
   const formatted = countries.map((country: any) => ({
     id: country._id,
-    name: country.name?.[lang] || country.name?.en || null,
+    name: country.name || null,
     tripType: country.tripType,
     images: Array.isArray(country.images)
       ? country.images.map(
