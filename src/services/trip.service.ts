@@ -244,6 +244,7 @@ export const nearbyTripsService = async (lat: number, lng: number, lang: Lang): 
         name: `$name.${lang}`,
         description: `$description.${lang}`,
         images: 1, 
+        rating: 1
       },
     },
   ]);
@@ -261,6 +262,7 @@ export const nearbyTripsService = async (lat: number, lng: number, lang: Lang): 
       lat: latOut,
       lng: lngOut,
       name: trip.name ?? null,
+      rating: trip.rating ?? null,
       description: trip.description ?? null,
       startDate: trip.startDate ?? null,
       endDate: trip.endDate ?? null,
