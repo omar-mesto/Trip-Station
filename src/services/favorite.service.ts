@@ -34,7 +34,7 @@ export const listFavoritesService = async (
       return {
         id: trip._id,
         price: trip.price,
-        images: trip.images || [],
+        images: Array.isArray(trip.images) ? trip.images.map((img: string) => `${process.env.BASE_URL}/uploads/tripImages/${img}`) : [],
         location: trip.location,
         lat:trip.lat,
         lng:trip.lan,
