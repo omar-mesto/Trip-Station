@@ -140,10 +140,15 @@ export const getInternationalAdsTrips = asyncHandler(async (req: Request, res: R
 export const listTripsByCountry = async (req: Request, res: Response) => {
   try {
     const { countryId } = req.params;
-    const lang = (req.query.lang as string) || 'en';
-    const result = await listTripsByCountryService(countryId, lang);
-    res.json({ success: true, message: 'Success', ...result });
+    const lang = (req.query.lang as string) || "en";
+    const lat = req.query.lat ? parseFloat(req.query.lat as string) : undefined;
+    const lon = req.query.lon ? parseFloat(req.query.lon as string) : undefined;
+
+    const result = await listTripsByCountryService(countryId, lang, lat, lon);
+
+    res.json({ success: true, message: "Success", ...result });
   } catch (error) {
-    res.status(500).json({ success: false, message: 'Server Error', error });
+    console.error("Error in listTripsByCountry:", error);
+    res.status(500).json({ success: false, message: "Server Error", error });
   }
 };

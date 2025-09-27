@@ -273,25 +273,57 @@ export const nearbyTripsService = async (lat: number, lng: number, lang: Lang): 
 
 export const listTripsByCountryService = async (
   countryId: string,
-  lang: string
+  lang: string,
+  lat?: number,
+  lon?: number
 ) => {
-  const trips = await Trip.find({ country: countryId })
-    .select(`_id price status images location name.${lang} description.${lang}`)
-    .lean();
-  const formatted = trips.map((trip: any) => {
-    return {
-      id: trip._id,
-      price: trip.price,
-      countryId: countryId,
-      location: trip.location,
-      status: trip.status,
-      images: Array.isArray(trip.images)? trip.images.map((img: string) =>`${process.env.BASE_URL}/uploads/tripImages/${img}`):[],
-      name: trip.name?.[lang] ?? null,
-      description: trip.description?.[lang] ?? null,
-    };
-  });
+  let trips: any[] = [];
 
-  return {
-    data: formatted,
-  };
+  if (lat !== undefined && lon !== undefined) {
+    trips = await Trip.aggregate([
+      {
+        $geoNear: {
+          near: { type: "Point", coordinates: [lon, lat] },
+          distanceField: "distance",
+          spherical: true,
+          query: { country: new mongoose.Types.ObjectId(countryId) },
+        },
+      },
+      {
+        $project: {
+          _id: 1,
+          price: 1,
+          status: 1,
+          images: 1,
+          location: 1,
+          name: `$name.${lang}`,
+          description: `$description.${lang}`,
+          distance: 1,
+          geoLocation: 1,
+        },
+      },
+    ]);
+  } else {
+    trips = await Trip.find({ country: countryId })
+      .select(`_id price lat lang status images location geoLocation name.${lang} description.${lang}`)
+      .lean();
+  }
+
+  const formatted = trips.map((trip: any) => ({
+    id: trip._id,
+    price: trip.price,
+    countryId,
+    location: trip.location,
+    status: trip.status,
+    distance: trip.distance ? (trip.distance / 1000).toFixed(2) : null,
+    lat: trip.geoLocation?.coordinates[1] ?? null,
+    lng: trip.geoLocation?.coordinates[0] ?? null,
+    images: Array.isArray(trip.images)
+      ? trip.images.map((img: string) => `${process.env.BASE_URL}/uploads/tripImages/${img}`)
+      : [],
+    name: trip.name ?? null,
+    description: trip.description ?? null,
+  }));
+
+  return { data: formatted };
 };
