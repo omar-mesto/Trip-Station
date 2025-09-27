@@ -296,8 +296,8 @@ export const listTripsByCountryService = async (
           status: 1,
           images: 1,
           location: 1,
-          name: `$name.${lang}`,
-          description: `$description.${lang}`,
+          name: { $ifNull: [`$name.${lang}`, null] },
+          description: { $ifNull: [`$description.${lang}`, null] },
           distance: 1,
           geoLocation: 1,
         },
@@ -307,6 +307,12 @@ export const listTripsByCountryService = async (
     trips = await Trip.find({ country: countryId })
       .select(`_id price lat lang status images location geoLocation name.${lang} description.${lang}`)
       .lean();
+
+    trips = trips.map((trip) => ({
+      ...trip,
+      name: trip.name?.[lang] ?? null,
+      description: trip.description?.[lang] ?? null,
+    }));
   }
 
   const formatted = trips.map((trip: any) => ({
