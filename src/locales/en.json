@@ -65,5 +65,6 @@
   "password_min_length":"Password Min Length 6",
   "invalid_old_password":"Invalid Old Password",
   "countryId is required":"countryId is required",
-  "account_deleted_successfully": "Account deleted successfully"
+  "account_deleted_successfully": "Account deleted successfully",
+  "from_must_be_before_to": "The start time must be before the end time."
 }

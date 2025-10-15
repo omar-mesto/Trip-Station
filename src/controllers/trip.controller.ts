@@ -26,22 +26,47 @@ export const createTrip = asyncHandler(async (req: Request, res: Response) => {
   if (isNaN(lat) || isNaN(lng)) {
     return errorResponse(res, t('lat_lng_required', lang), 400);
   }
+
   const images = req.files ? (req.files as Express.Multer.File[]).map(f => f.filename) : [];
 
-  const payload = {
+  const payload: any = {
     ...req.body,
     images,
     geoLocation: { type: 'Point', coordinates: [lng, lat] },
     startDate: req.body.startDate ? new Date(req.body.startDate) : undefined,
     endDate: req.body.endDate ? new Date(req.body.endDate) : undefined,
   };
+  if (req.body["availableTime[from]"] && req.body["availableTime[to]"]) {
+    payload.availableTime = {
+      from: req.body["availableTime[from]"],
+      to: req.body["availableTime[to]"],
+    };
+  }
   if (payload.startDate && payload.endDate && payload.startDate > payload.endDate) {
     return errorResponse(res, t('start_must_before_end', lang), 400);
   }
-  const trip = await createTripService(payload as any);
+  if (
+    payload.availableTime &&
+    payload.availableTime.from &&
+    payload.availableTime.to
+  ) {
+    const from = payload.availableTime.from;
+    const to = payload.availableTime.to;
+    const [fromH, fromM] = from.split(':').map(Number);
+  const [toH, toM] = to.split(':').map(Number);
+  const fromMinutes = fromH * 60 + fromM;
+  const toMinutes = toH * 60 + toM;
 
+  if (fromMinutes >= toMinutes) {
+    return errorResponse(res, t('from_must_be_before_to', lang), 400);
+  }
+  } else {
+    return errorResponse(res, t('available_time_required', lang), 400);
+  }
+  const trip = await createTripService(payload);
   return successResponse(res, t('trip_created', lang), trip, 201);
 });
+
 
 export const updateTrip = asyncHandler(async (req: Request, res: Response) => {
   const lang = getLang(req);
@@ -52,18 +77,41 @@ export const updateTrip = asyncHandler(async (req: Request, res: Response) => {
   if (req.body.lat !== undefined && req.body.lng !== undefined) {
     const lat = parseFloat(req.body.lat);
     const lng = parseFloat(req.body.lng);
+
     if (isNaN(lat) || isNaN(lng)) {
       return errorResponse(res, t('lat_lng_required', lang), 400);
     }
     updateData.geoLocation = { type: 'Point', coordinates: [lng, lat] };
   }
-  const updated = await updateTripService(req.params.id, updateData);
-  if (!updated) return errorResponse(res, t('trip_not_found', lang), 404);
+  if (req.body["availableTime[from]"] && req.body["availableTime[to]"]) {
+    updateData.availableTime = {
+      from: req.body["availableTime[from]"],
+      to: req.body["availableTime[to]"],
+    };
+  }
   if (req.body.startDate) updateData.startDate = new Date(req.body.startDate);
   if (req.body.endDate) updateData.endDate = new Date(req.body.endDate);
   if (updateData.startDate && updateData.endDate && updateData.startDate > updateData.endDate) {
     return errorResponse(res, t('start_must_before_end', lang), 400);
   }
+  if (
+    updateData.availableTime &&
+    updateData.availableTime.from &&
+    updateData.availableTime.to
+  ) {
+    const from = updateData.availableTime.from;
+    const to = updateData.availableTime.to;
+
+    const [fromH, fromM] = from.split(':').map(Number);
+    const [toH, toM] = to.split(':').map(Number);
+    const fromMinutes = fromH * 60 + fromM;
+    const toMinutes = toH * 60 + toM;
+    if (fromMinutes >= toMinutes) {
+      return errorResponse(res, t('from_must_be_before_to', lang), 400);
+    }
+  }
+  const updated = await updateTripService(req.params.id, updateData);
+  if (!updated) return errorResponse(res, t('trip_not_found', lang), 404);
   return successResponse(res, t('trip_updated', lang), updated);
 });
 

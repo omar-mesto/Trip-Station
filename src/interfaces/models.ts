@@ -34,6 +34,10 @@ export interface ITrip extends Document {
   updatedAt: Date;
   startDate: Date;
   endDate: Date;
+  availableTime: {
+    from: string;
+    to: string;
+  };
   tripType: 'local' | 'international';
 }
 

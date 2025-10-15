@@ -41,6 +41,10 @@ const tripSchema = new Schema<ITrip>(
         return d;
       }
     },
+    availableTime: {
+      from: { type: String, required: [true, 'Available time (from) is required'] },
+      to: { type: String, required: [true, 'Available time (to) is required'] },
+    },
     tripType: { type: String, enum: ['local', 'international'], default: 'international' },
     isAdvertisement: { type: Boolean, default: false },
     price: { type: Number, required: true },
@@ -61,6 +65,9 @@ tripSchema.set("toJSON", {
     }
     if (ret.endDate) {
       ret.endDate = ret.endDate.toISOString().split("T")[0];
+    }
+    if (ret.availableTime && ret.availableTime.from && ret.availableTime.to) {
+      ret.availableTime = `${ret.availableTime.from} - ${ret.availableTime.to}`;
     }
     return ret;
   }
