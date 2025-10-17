@@ -162,41 +162,36 @@ export const getTripDetailsService = async (id: string, lang: Lang, userId?: str
     lng,
     startDate: trip.startDate,
     endDate: trip.endDate,
-    availableTime: trip.availableTime
-      ? {
-          from: trip.availableTime.from ?? null,
-          to: trip.availableTime.to ?? null,
-        }
-      : null,
     rating: trip.rating,
     status: trip.status,
     images: Array.isArray(trip.images)
-      ? trip.images.map(
-          (img: string) => `${process.env.BASE_URL}/uploads/tripImages/${img}`
-        )
+      ? trip.images.map((img: string) => `${process.env.BASE_URL}/uploads/tripImages/${img}`)
       : [],
-    company: {
-      name:
-        (trip.company as any)?.name?.[lang] ??
-        (trip.company as any)?.name ??
-        null,
-      rating: (trip.company as any)?.rating ?? null,
-      contact: (trip.company as any)?.contact ?? null,
-    },
-    country:
-      (trip.country as any)?.name?.[lang] ??
-      (trip.country as any)?.name ??
-      null,
+    company: trip.company
+      ? {
+          name: (trip.company as any)?.name?.[lang] ?? (trip.company as any)?.name ?? null,
+          rating: (trip.company as any)?.rating ?? 0,
+          contact: {
+            whatsapp: (trip.company as any)?.contact?.whatsapp ?? null,
+            facebook: (trip.company as any)?.contact?.facebook ?? null,
+            website: (trip.company as any)?.contact?.website ?? null,
+            instagram: (trip.company as any)?.contact?.instagram ?? null,
+            mapLocation: (trip.company as any)?.contact?.mapLocation ?? null,
+          },
+        }
+      : null,
+    country: (trip.country as any)?.name?.[lang] ?? (trip.country as any)?.name ?? null,
     name: trip.name?.[lang] ?? trip.name ?? null,
     description: trip.description?.[lang] ?? trip.description ?? null,
     isFavorited,
   };
 };
 
+
 export const localAdsTripsService = async (lang: Lang) => {
   const trips = await Trip.find({ isAdvertisement: true, tripType: "local" })
     .populate('company', `name`)
-    .select(`_id price startDate endDate location name.${lang} images description.${lang} geoLocation rating availableTime`)
+    .select(`_id price startDate endDate location name.${lang} images description.${lang} geoLocation discountedPrice rating availableTime`)
     .lean();
 
   return trips.map((trip: any) => {
@@ -226,7 +221,7 @@ export const localAdsTripsService = async (lang: Lang) => {
 
 export const internationalAdsTripsService = async (lang: Lang) => {
   const trips = await Trip.find({ isAdvertisement: true, tripType: "international" })
-    .select(`_id price location startDate endDate name.${lang} images description.${lang} geoLocation rating availableTime`)
+    .select(`_id price location startDate endDate name.${lang} images discountedPrice description.${lang} geoLocation rating availableTime`)
     .populate('company', `name`)
     .lean();
 

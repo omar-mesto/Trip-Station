@@ -102,8 +102,7 @@ export interface ICompany extends Document {
     facebook: string,
     website: string ,
     instagram: string,
-    email: string,
-    phone: string
+    mapLocation: string
   }
   rating: number;
   logo: string;

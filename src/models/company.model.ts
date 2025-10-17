@@ -12,7 +12,8 @@ const companySchema = new Schema<ICompany>({
     whatsapp: { type: String },
     facebook: { type: String },
     website: { type: String },  
-    instagram: { type: String }
+    instagram: { type: String },
+    mapLocation: { type: String }
   }
 }, { timestamps: true });
 
