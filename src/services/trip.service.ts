@@ -164,6 +164,12 @@ export const getTripDetailsService = async (id: string, lang: Lang, userId?: str
     endDate: trip.endDate,
     rating: trip.rating,
     status: trip.status,
+    availableTime: trip.availableTime
+      ? {
+          from: trip.availableTime.from ?? null,
+          to: trip.availableTime.to ?? null,
+        }
+      : null,
     images: Array.isArray(trip.images)
       ? trip.images.map((img: string) => `${process.env.BASE_URL}/uploads/tripImages/${img}`)
       : [],
@@ -186,7 +192,6 @@ export const getTripDetailsService = async (id: string, lang: Lang, userId?: str
     isFavorited,
   };
 };
-
 
 export const localAdsTripsService = async (lang: Lang) => {
   const trips = await Trip.find({ isAdvertisement: true, tripType: "local" })
