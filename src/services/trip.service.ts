@@ -55,6 +55,7 @@ export const listTripsService = async (page: number, limit: number, lang: Lang) 
     return {
       id: trip._id,
       price: trip.price,
+      discountedPrice: trip.discountedPrice ?? null, 
       isAdvertisement: trip.isAdvertisement,
       lat,
       lng,
@@ -121,6 +122,7 @@ export const filterTripsService = async (filters: any, lang: Lang) => {
     return {
       id: trip._id,
       price: trip.price,
+      discountedPrice: trip.discountedPrice ?? null,
       rating:trip.rating,
       images: Array.isArray(trip.images)? trip.images.map((img: string) =>`${process.env.BASE_URL}/uploads/tripImages/${img}`):[], 
       location: trip.location,
@@ -150,59 +152,82 @@ export const getTripDetailsService = async (id: string, lang: Lang, userId?: str
     });
     isFavorited = !!favoriteExists;
   }
+
   return {
     id: trip._id,
     price: trip.price,
+    discountedPrice: trip.discountedPrice ?? null,
     location: trip.location,
     lat,
     lng,
     startDate: trip.startDate,
     endDate: trip.endDate,
+    availableTime: trip.availableTime
+      ? {
+          from: trip.availableTime.from ?? null,
+          to: trip.availableTime.to ?? null,
+        }
+      : null,
     rating: trip.rating,
     status: trip.status,
-    images: Array.isArray(trip.images) 
-      ? trip.images.map((img: string) => `${process.env.BASE_URL}/uploads/tripImages/${img}`) 
+    images: Array.isArray(trip.images)
+      ? trip.images.map(
+          (img: string) => `${process.env.BASE_URL}/uploads/tripImages/${img}`
+        )
       : [],
     company: {
-      name: (trip.company as any)?.name?.[lang] ?? (trip.company as any)?.name ?? null,
-      rating: (trip.company as any)?.rating ?? 0,
-      contact: {
-        whatsapp: (trip.company as any)?.contact?.whatsapp ?? null,
-        facebook: (trip.company as any)?.contact?.facebook ?? null,
-        website: (trip.company as any)?.contact?.website ?? null,
-        instagram: (trip.company as any)?.contact?.instagram ?? null,
-      }
+      name:
+        (trip.company as any)?.name?.[lang] ??
+        (trip.company as any)?.name ??
+        null,
+      rating: (trip.company as any)?.rating ?? null,
+      contact: (trip.company as any)?.contact ?? null,
     },
-    country: (trip.country as any)?.name?.[lang] ?? (trip.country as any)?.name ?? null,
+    country:
+      (trip.country as any)?.name?.[lang] ??
+      (trip.country as any)?.name ??
+      null,
     name: trip.name?.[lang] ?? trip.name ?? null,
     description: trip.description?.[lang] ?? trip.description ?? null,
-    isFavorited
+    isFavorited,
   };
 };
 
 export const localAdsTripsService = async (lang: Lang) => {
   const trips = await Trip.find({ isAdvertisement: true, tripType: "local" })
-    .select(`_id price startDate endDate location name.${lang} images description.${lang} geoLocation rating`)
+    .populate('company', `name`)
+    .select(`_id price startDate endDate location name.${lang} images description.${lang} geoLocation rating availableTime`)
     .lean();
 
   return trips.map((trip: any) => {
     return {
       id: trip._id,
       price: trip.price,
+      discountedPrice: trip.discountedPrice ?? null,
       images: Array.isArray(trip.images)? trip.images.map((img: string) =>`${process.env.BASE_URL}/uploads/tripImages/${img}`):[],
       startDate: trip.startDate,
       endDate: trip.endDate,
       location: trip.location,
       rating: trip.rating ?? null,
+      availableTime: trip.availableTime
+        ? {
+            from: trip.availableTime.from ?? null,
+            to: trip.availableTime.to ?? null,
+          }
+        : null,
       name: trip.name?.[lang] ?? null,
       description: trip.description?.[lang] ?? null,
+      company: {
+      name: (trip.company as any)?.name?.[lang] ?? (trip.company as any)?.name ?? null,
+    },
     };
   });
 };
 
 export const internationalAdsTripsService = async (lang: Lang) => {
   const trips = await Trip.find({ isAdvertisement: true, tripType: "international" })
-    .select(`_id price location startDate endDate name.${lang} images description.${lang} geoLocation rating`)
+    .select(`_id price location startDate endDate name.${lang} images description.${lang} geoLocation rating availableTime`)
+    .populate('company', `name`)
     .lean();
 
   return trips.map((trip: any) => {
@@ -213,12 +238,22 @@ export const internationalAdsTripsService = async (lang: Lang) => {
       images: Array.isArray(trip.images)? trip.images.map((img: string) =>`${process.env.BASE_URL}/uploads/tripImages/${img}`):[],
       location: trip.location,
       rating: trip.rating ?? null,
+      discountedPrice: trip.discountedPrice ?? null,
       startDate: trip.startDate,
       endDate: trip.endDate,
+      availableTime: trip.availableTime
+        ? {
+            from: trip.availableTime.from ?? null,
+            to: trip.availableTime.to ?? null,
+          }
+        : null,
       lat,
       lng,
       name: trip.name?.[lang] ?? null,
       description: trip.description?.[lang] ?? null,
+      company: {
+      name: (trip.company as any)?.name?.[lang] ?? (trip.company as any)?.name ?? null
+    },
     };
   });
 };
@@ -293,6 +328,7 @@ export const listTripsByCountryService = async (
         $project: {
           _id: 1,
           price: 1,
+          discountedPrice: 1,
           status: 1,
           images: 1,
           location: 1,
@@ -305,7 +341,7 @@ export const listTripsByCountryService = async (
     ]);
   } else {
     trips = await Trip.find({ country: countryId })
-      .select(`_id price lat lang status images location geoLocation name.${lang} description.${lang}`)
+      .select(`_id price discountedPrice  lat lang status images location geoLocation name.${lang} description.${lang}`)
       .lean();
 
     trips = trips.map((trip) => ({
@@ -318,6 +354,7 @@ export const listTripsByCountryService = async (
   const formatted = trips.map((trip: any) => ({
     id: trip._id,
     price: trip.price,
+    discountedPrice: trip.discountedPrice ?? null,
     countryId,
     location: trip.location,
     status: trip.status,

@@ -47,6 +47,7 @@ const tripSchema = new Schema<ITrip>(
     },
     tripType: { type: String, enum: ['local', 'international'], default: 'international' },
     isAdvertisement: { type: Boolean, default: false },
+    discountedPrice: { type: Number, required: false },
     price: { type: Number, required: true },
     rating: { type: Number, default: 0 },
     status: { type: String, default: 'active' },

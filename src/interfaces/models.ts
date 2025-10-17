@@ -38,6 +38,7 @@ export interface ITrip extends Document {
     from: string;
     to: string;
   };
+  discountedPrice: number,
   tripType: 'local' | 'international';
 }
 

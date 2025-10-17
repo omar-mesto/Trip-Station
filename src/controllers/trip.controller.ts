@@ -33,6 +33,7 @@ export const createTrip = asyncHandler(async (req: Request, res: Response) => {
     ...req.body,
     images,
     geoLocation: { type: 'Point', coordinates: [lng, lat] },
+    discountedPrice: req.body.discountedPrice ? Number(req.body.discountedPrice) : undefined,
     startDate: req.body.startDate ? new Date(req.body.startDate) : undefined,
     endDate: req.body.endDate ? new Date(req.body.endDate) : undefined,
   };
@@ -70,7 +71,7 @@ export const createTrip = asyncHandler(async (req: Request, res: Response) => {
 
 export const updateTrip = asyncHandler(async (req: Request, res: Response) => {
   const lang = getLang(req);
-  const updateData: any = { ...req.body };
+  const updateData: any = { ...req.body, discountedPrice: req.body.discountedPrice ? Number(req.body.discountedPrice) : undefined, };
   if (req.files && (req.files as Express.Multer.File[]).length > 0) {
     updateData.images = (req.files as Express.Multer.File[]).map(f => f.filename);
   }
