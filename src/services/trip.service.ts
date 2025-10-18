@@ -42,7 +42,7 @@ export const listTripsService = async (page: number, limit: number, lang: Lang) 
     .populate('company', `name rating`)
     .populate('country', `name`)
     .select(
-      `_id price endDate startDate isAdvertisement tripType status images rating location company country name description geoLocation`
+      `_id price endDate startDate isAdvertisement tripType status images rating location company country name discountedPrice description geoLocation`
     )
     .skip(skip)
     .limit(limit)
@@ -306,12 +306,7 @@ export const nearbyTripsService = async (lat: number, lng: number, lang: Lang): 
   });
 };
 
-export const listTripsByCountryService = async (
-  countryId: string,
-  lang: string,
-  lat?: number,
-  lon?: number
-) => {
+export const listTripsByCountryService = async (countryId: string,lang: string,lat?: number,lon?: number ) => {
   let trips: any[] = [];
 
   if (lat !== undefined && lon !== undefined) {
